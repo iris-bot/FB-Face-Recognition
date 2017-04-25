@@ -1,0 +1,10 @@
+applications:
+- path: .
+  memory: 512M
+  instances: 1
+  domain: mybluemix.net
+  name: FB Face Recognition
+  host: fb-face-recognition
+  disk_quota: 1024M
+  services:
+  - FB Face Recognition-cloudantNoSQLDB
