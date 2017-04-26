@@ -1,51 +1,52 @@
-/**
- * Module dependencies.
+/*!
+ * dependencies
  */
 
 var express = require('express'),
+    bodyParser = require('body-parser'),
     routes = require('./routes'),
-    user = require('./routes/user'),
+    config = require('./config'),
     http = require('http'),
     path = require('path'),
-    fs = require('fs');
+    fs = require('fs'),
+    logger = require('morgan'),
+    errorHandler = require('errorhandler'),
+    multipart = require('connect-multiparty'),
+    methodOverride = require('method-override');
+
+/*!
+ * init
+ */
 
 var app = express();
-
 var db;
-
 var cloudant;
-
 var fileToUpload;
-
-var dbCredentials = {
-    dbName: 'my_sample_db'
-};
-
-var bodyParser = require('body-parser');
-var methodOverride = require('method-override');
-var logger = require('morgan');
-var errorHandler = require('errorhandler');
-var multipart = require('connect-multiparty')
+var dbCredentials = { dbName: 'my_sample_db' };
 var multipartMiddleware = multipart();
 
-// all environments
-app.set('port', process.env.PORT || 3000);
-app.set('views', __dirname + '/views');
-app.set('view engine', 'ejs');
-app.engine('html', require('ejs').renderFile);
-app.use(logger('dev'));
-app.use(bodyParser.urlencoded({
-    extended: true
-}));
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(logger('dev'));
 app.use(methodOverride());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/style', express.static(path.join(__dirname, '/views/style')));
+
+app.set('port', process.env.PORT || 3000);
+app.set('views', __dirname + '/views');
+app.set('view engine', 'ejs');
+
+app.engine('html', require('ejs').renderFile);
 
 // development only
 if ('development' == app.get('env')) {
     app.use(errorHandler());
 }
+
+
+/*! 
+ * cloudant connection setup
+ */
 
 function getDBCredentialsUrl(jsonData) {
     var vcapServices = JSON.parse(jsonData);
@@ -90,7 +91,32 @@ function initDBConnection() {
 
 initDBConnection();
 
-app.get('/', routes.index);
+
+
+/*! 
+ * routes
+ */
+
+app.get('/getAccessToken', routes.getAccessToken);
+app.post('/recognize', routes.recognize);
+
+/*!
+ * let's go!
+ */
+
+app.listen(config.port, function() {
+  console.log('Express server listening on port %d', config.port);
+});
+
+
+
+
+
+
+/**
+ *     SAMPLE CODE
+ */
+
 
 function createResponseData(id, name, value, attachments) {
 
