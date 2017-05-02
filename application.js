@@ -152,9 +152,9 @@ var saveDocument = function(id, name, value, response) {
 
 app.get('/', routes.index);
 
-app.get('/getAccessToken', routes.getAccessToken);
+//app.get('/getAccessToken', routes.getAccessToken);
 
-app.post('/recognize', routes.recognize);
+//app.post('/recognize', routes.recognize);
 
 app.get('/api/favorites/attach', function(request, response) {
     var doc = request.query.id;
