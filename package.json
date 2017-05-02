@@ -15,7 +15,8 @@
     "errorhandler": "1.4.x",
     "connect-multiparty": "2.0.x",
     "fbgraph": "1.1.0",
-    "request": "2.67.0"
+    "request": "2.67.0",
+    "watson-developer-cloud": "2.8.x"
   },
   "repository": {},
   "engines": {

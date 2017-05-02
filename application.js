@@ -12,7 +12,10 @@ var express = require('express'),
     logger = require('morgan'),
     errorHandler = require('errorhandler'),
     multipart = require('connect-multiparty'),
-    methodOverride = require('method-override');
+    methodOverride = require('method-override'),
+    watson = require('watson-developer-cloud'),
+    getAccessToken = require('./routes/getAccessToken'),
+	recognize = require('./routes/recognize');
 
 /*!
  * init
