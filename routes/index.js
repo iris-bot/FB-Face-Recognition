@@ -3,7 +3,10 @@
  * GET home page.
  */
 
-module.exports = {
-  getAccessToken: require('./getAccessToken'),
-  recognize: require('./recognize')
-};
+exports.index = function(req, res){
+  res.render('index.html', { title: 'Cloudant Boiler Plate' });
+
+//module.exports = {
+//  getAccessToken: require('./getAccessToken'),
+//  recognize: require('./recognize')
+//};
