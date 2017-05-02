@@ -93,30 +93,9 @@ initDBConnection();
 
 
 
-/*! 
- * routes
- */
-
-app.get('/getAccessToken', routes.getAccessToken);
-app.post('/recognize', routes.recognize);
-
 /*!
- * let's go!
+ * functions
  */
-
-app.listen(config.port, function() {
-  console.log('Express server listening on port %d', config.port);
-});
-
-
-
-
-
-
-/**
- *     SAMPLE CODE
- */
-
 
 function createResponseData(id, name, value, attachments) {
 
@@ -164,6 +143,18 @@ var saveDocument = function(id, name, value, response) {
     });
 
 }
+
+
+
+/*! 
+ * routes
+ */
+
+app.get('/');
+
+app.get('/getAccessToken', routes.getAccessToken);
+
+app.post('/recognize', routes.recognize);
 
 app.get('/api/favorites/attach', function(request, response) {
     var doc = request.query.id;
