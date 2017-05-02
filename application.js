@@ -150,7 +150,7 @@ var saveDocument = function(id, name, value, response) {
  * routes
  */
 
-app.get('/');
+app.get('/', routes.index);
 
 app.get('/getAccessToken', routes.getAccessToken);
 
