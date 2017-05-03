@@ -131,29 +131,29 @@ _dbGet('config', {selector:{}}, function(err,res){
 	}
 });
 
-var vr = watson.visual_recognition({
-  api_key: config.api_key.visual_recognition,
-  version: 'v3',
-  version_date: '2016-05-19'
-});
+//var vr = watson.visual_recognition({
+//  api_key: config.api_key.visual_recognition,
+//  version: 'v3',
+//  version_date: '2016-05-19'
+//});
 
-vr.listCollections({},function(err, res) {
-   if (!err){
-		var cols = res.collections;
-		for(var i in cols){
-			if(cols[i].name==="faces"){
-				facesCollection = cols[i];
-			}
-		}
-		if(facesCollection===null || facesCollection==undefined){
-			vr.createCollection({name:'faces'}, function(_err, _resp) {
-   	 			if (!err){
-   	 				facesCollection = _resp;
-   	 			}
-   	 		});
-		}
-   }
-});
+//vr.listCollections({},function(err, res) {
+//   if (!err){
+//		var cols = res.collections;
+//		for(var i in cols){
+//			if(cols[i].name==="faces"){
+//				facesCollection = cols[i];
+//			}
+//		}
+//		if(facesCollection===null || facesCollection==undefined){
+//			vr.createCollection({name:'faces'}, function(_err, _resp) {
+//   	 			if (!err){
+//   	 				facesCollection = _resp;
+//   	 			}
+//   	 		});
+//		}
+//   }
+//});
 
 
 /*!
@@ -236,7 +236,7 @@ var fbRecognize = function(imgId, callback) {
 };
 
 var recognize = function(imgUrl, _callback){
-  httprequest.get({url:'/getAccessToken'}, function(err, httpResponse, body){
+  httprequest.get({url:'/getFbAccessToken'}, function(err, httpResponse, body){
 	  // vars
 	  var accessToken = body;
 	  // set access_token to upload image
