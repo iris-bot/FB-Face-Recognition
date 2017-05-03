@@ -5,7 +5,6 @@
 var express = require('express'),
     bodyParser = require('body-parser'),
     routes = require('./routes'),
-    config = require('./config'),
     http = require('http'),
     path = require('path'),
     fs = require('fs'),
@@ -14,8 +13,8 @@ var express = require('express'),
     multipart = require('connect-multiparty'),
     methodOverride = require('method-override'),
     watson = require('watson-developer-cloud'),
-    getAccessToken = require('./routes/getAccessToken'),
-	recognize = require('./routes/recognize');
+	graph = require('fbgraph'),
+	httprequest = require('request');
 
 /*!
  * init
@@ -24,9 +23,11 @@ var express = require('express'),
 var app = express();
 var db;
 var cloudant;
+var config = {};
 var fileToUpload;
-var dbCredentials = { dbName: 'my_sample_db' };
+var dbCredentials = {};
 var multipartMiddleware = multipart();
+var facesCollection = {};
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -51,49 +52,108 @@ if ('development' == app.get('env')) {
  * cloudant connection setup
  */
 
-function getDBCredentialsUrl(jsonData) {
-    var vcapServices = JSON.parse(jsonData);
-    // Pattern match to find the first instance of a Cloudant service in
-    // VCAP_SERVICES. If you know your service key, you can access the
-    // service credentials directly by using the vcapServices object.
-    for (var vcapService in vcapServices) {
-        if (vcapService.match(/cloudant/i)) {
-            return vcapServices[vcapService][0].credentials.url;
-        }
-    }
-}
-
 function initDBConnection() {
-    //When running on Bluemix, this variable will be set to a json object
-    //containing all the service credentials of all the bound services
-    if (process.env.VCAP_SERVICES) {
-        dbCredentials.url = getDBCredentialsUrl(process.env.VCAP_SERVICES);
-    } else { //When running locally, the VCAP_SERVICES will not be set
+   if (process.env.VCAP_SERVICES) {
+      var vcapServices = JSON.parse(process.env.VCAP_SERVICES);
+      for ( var vcapService in vcapServices) {
+         if (vcapService.match(/cloudant/i)) {
+            dbCredentials.host = vcapServices[vcapService][0].credentials.host;
+            dbCredentials.port = vcapServices[vcapService][0].credentials.port;
+            dbCredentials.user = vcapServices[vcapService][0].credentials.username;
+            dbCredentials.password = vcapServices[vcapService][0].credentials.password;
+            dbCredentials.url = vcapServices[vcapService][0].credentials.url;
 
-        // When running this app locally you can get your Cloudant credentials
-        // from Bluemix (VCAP_SERVICES in "cf env" output or the Environment
-        // Variables section for an app in the Bluemix console dashboard).
-        // Once you have the credentials, paste them into a file called vcap-local.json.
-        // Alternately you could point to a local database here instead of a
-        // Bluemix service.
-        // url will be in this format: https://username:password@xxxxxxxxx-bluemix.cloudant.com
-        dbCredentials.url = getDBCredentialsUrl(fs.readFileSync("vcap-local.json", "utf-8"));
-    }
+            cloudant = require('cloudant')(dbCredentials.url);
 
-    cloudant = require('cloudant')(dbCredentials.url);
-
-    // check if DB exists if not create
-    cloudant.db.create(dbCredentials.dbName, function(err, res) {
-        if (err) {
-            console.log('Could not create new db: ' + dbCredentials.dbName + ', it might already exist.');
-        }
-    });
-
-    db = cloudant.use(dbCredentials.dbName);
+            break;
+         }
+      }
+   } else {
+      console.warn('VCAP_SERVICES environment variable not set - data will be unavailable to the UI');
+   }
 }
+
+var _dbUse = function(dbName) {
+   cloudant.db.create(dbName, function(err, res) {});
+   db = cloudant.use(dbName);
+   if (db == null) {
+      console.warn('Could not find Cloudant credentials in VCAP_SERVICES environment variable - data will be unavailable to the UI');
+   } else {
+      return db;
+   }
+}
+
+var _dbGet = function(docType, _query, func) {
+   cloudant.db.create(docType, function(err, res) {});
+   var _db = cloudant.use(docType);
+   if (!_query.selector._id) {
+      _db.find(_query, func);
+   } else {
+      _db.get(_query.selector._id, func);
+   }
+}
+
+var _dbPost = function(docType, data, func) {
+   cloudant.db.create(docType, function(err, res) {});
+   var _db = cloudant.use(docType);
+   if (!isObject(data))
+      data = {
+         value : data
+      };
+   _db.insert(data, null, function(err, doc) {
+      func(err, doc);
+   });
+}
+
+var _dbPut = function(docType, data, func) {
+   cloudant.db.create(docType, function(err, res) {});
+   var _db = cloudant.use(docType);
+   if (!isObject(data))
+      data = {
+         value : data
+      };
+   _db.insert(data, data._id, function(err, doc) {
+      func(err, doc);
+   });
+}
+
 
 initDBConnection();
 
+
+/*!
+ * configurations
+ */
+
+_dbGet('config', {selector:{}}, function(err,res){
+	if(!err && res.docs.length>0){
+		config = res.docs[0];		
+	}
+});
+
+var vr = watson.visual_recognition({
+  api_key: config.api_key.visual_recognition,
+  version: 'v3',
+  version_date: '2016-05-19'
+});
+
+vr.listCollections({},function(err, res) {
+   if (!err){
+		var cols = res.collections;
+		for(var i in cols){
+			if(cols[i].name==="faces"){
+				facesCollection = cols[i];
+			}
+		}
+		if(facesCollection===null || facesCollection==undefined){
+			vr.createCollection({name:'faces'}, function(_err, _resp) {
+   	 			if (!err){
+   	 				facesCollection = _resp;
+   	 			}
+   	 		});
+		}
+   }
+});
 
 
 /*!
@@ -145,9 +205,64 @@ var saveDocument = function(id, name, value, response) {
         response.end();
     });
 
-}
+};
 
+/*!
+ * facebook functions
+ */
 
+var fbRecognize = function(imgId, callback) {
+  httprequest.post({
+    url:'https://www.facebook.com/photos/tagging/recognition/?dpr=1.5',
+    headers: {
+       'x_fb_background_state': 1,
+       'origin': 'https://www.facebook.com',
+       'accept-encoding': 'gzip, deflate, lzma',
+       'accept-language': 'en-US,en;q=0.8',
+       'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36',
+       'content-type': 'application/x-www-form-urlencoded',
+       'accept': '*/*',
+       'referer': 'https://www.facebook.com/',
+       'cookie': config.fb.cookies
+    },
+    body: 'recognition_project=composer_facerec&photos[0]=' + imgId + '&target&is_page=false&include_unrecognized_faceboxes=false&include_face_crop_src=false&include_recognized_user_profile_picture=false&include_low_confidence_recognitions=false&' + config.fb.req_params,
+    gzip: true
+  }, function cb(err, httpResponse, body) {
+      
+      // YAY!
+      var json = JSON.parse(body.replace('for (;;);', ''));
+      callback(json.payload[0].faceboxes);
+  });
+};
+
+var recognize = function(imgUrl, _callback){
+  httprequest.get({url:'/getAccessToken'}, function(err, httpResponse, body){
+	  // vars
+	  var accessToken = body;
+	  // set access_token to upload image
+	  graph.setAccessToken(accessToken);
+	  // upload image
+	  var params = {
+	    url: imgUrl, 
+	    message:'temp', 
+	    privacy: { value: 'SELF' } // we don't want other people to see it
+	  };
+	  graph.post('/me/photos', params, function(err, r) {
+	    // we have the imgId! now we can ask Facebook to recognize my friends
+	    var imgId = r.id;
+	    // wait 3 seconds before asking Facebook (they recognize asynchronously)
+	    setTimeout(function() {
+	      fbRecognize(imgId, function(result) {
+	        if(result.length === 0) {
+	          _callback({ error: 'Facebook couldn\'t recognize this picture.' });
+	        } else {
+	          _callback(result);
+	        }
+	      });
+	    }, 3000);
+	  });
+  });
+};   
 
 /*! 
  * routes
@@ -155,14 +270,45 @@ var saveDocument = function(id, name, value, response) {
 
 app.get('/', routes.index);
 
-//app.get('/getAccessToken', routes.getAccessToken);
+/*
+ * facebook routes
+ */
 
-//app.post('/recognize', routes.recognize);
+app.get('/getFbAccessToken', function(req, res){
+
+  // we don't have a code yet, go to auth
+  if (!req.query.code) {
+    var authUrl = graph.getOauthUrl({
+      client_id: config.fb.client_id,
+      redirect_uri: '/getFbAccessToken',
+      scope: config.fb.scope
+    });
+    if (!req.query.error) res.redirect(authUrl);
+    else res.send('access denied');
+    return ;
+  }
+
+  // code is set, let's get that access token
+  graph.authorize({
+    client_id:      config.fb.client_id,
+    redirect_uri:   '/getFbAccessToken',
+    client_secret:  config.fb.client_secret,
+    code:           req.query.code
+  }, function (err, facebookRes) {
+    res.send(facebookRes);
+  });	
+
+});
+
+/*
+ *  persistence routes
+ */
 
 app.get('/api/favorites/attach', function(request, response) {
     var doc = request.query.id;
     var key = request.query.key;
 
+	_dbUse('my_sample_db');
     db.attachment.get(doc, key, function(err, body) {
         if (err) {
             response.status(500);
@@ -187,6 +333,7 @@ app.post('/api/favorites/attach', multipartMiddleware, function(request, respons
 
     var id;
 
+	_dbUse('my_sample_db');
     db.get(request.query.id, function(err, existingdoc) {
 
         var isExistingDoc = false;
@@ -210,18 +357,23 @@ app.post('/api/favorites/attach', multipartMiddleware, function(request, respons
 
                     if (file) {
 
+						_dbUse('my_sample_db');
                         db.attachment.insert(id, file.name, data, file.type, {
                             rev: rev
                         }, function(err, document) {
                             if (!err) {
                                 console.log('Attachment saved successfully.. ');
 
-                                db.get(document.id, function(err, doc) {
+                                	_dbUse('my_sample_db');
+									db.get(document.id, function(err, doc) {
                                     console.log('Attachements from server --> ' + JSON.stringify(doc._attachments));
 
                                     var attachements = [];
                                     var attachData;
                                     for (var attachment in doc._attachments) {
+                                    	
+                                    	
+                                    	
                                         if (attachment == value) {
                                             attachData = {
                                                 "key": attachment,
@@ -262,6 +414,7 @@ app.post('/api/favorites/attach', multipartMiddleware, function(request, respons
             };
 
             // save doc
+            _dbUse('my_sample_db');
             db.insert({
                 name: name,
                 value: value
@@ -311,10 +464,12 @@ app.delete('/api/favorites', function(request, response) {
     console.log("Removing document of ID: " + id);
     console.log('Request Query: ' + JSON.stringify(request.query));
 
+    _dbUse('my_sample_db');
     db.get(id, {
         revs_info: true
     }, function(err, doc) {
         if (!err) {
+            _dbUse('my_sample_db');
             db.destroy(doc._id, doc._rev, function(err, res) {
                 // Handle response
                 if (err) {
@@ -339,6 +494,7 @@ app.put('/api/favorites', function(request, response) {
 
     console.log("ID: " + id);
 
+    _dbUse('my_sample_db');
     db.get(id, {
         revs_info: true
     }, function(err, doc) {
@@ -346,6 +502,7 @@ app.put('/api/favorites', function(request, response) {
             console.log(doc);
             doc.name = name;
             doc.value = value;
+            _dbUse('my_sample_db');
             db.insert(doc, doc.id, function(err, doc) {
                 if (err) {
                     console.log('Error inserting data\n' + err);
@@ -361,7 +518,7 @@ app.get('/api/favorites', function(request, response) {
 
     console.log("Get method invoked.. ")
 
-    db = cloudant.use(dbCredentials.dbName);
+    _dbUse('my_sample_db');
     var docList = [];
     var i = 0;
     db.list(function(err, body) {
@@ -373,6 +530,7 @@ app.get('/api/favorites', function(request, response) {
                 // save doc
                 var docName = 'sample_doc';
                 var docDesc = 'A sample Document';
+                _dbUse('my_sample_db');
                 db.insert({
                     name: docName,
                     value: 'A sample Document'
@@ -397,6 +555,7 @@ app.get('/api/favorites', function(request, response) {
 
                 body.rows.forEach(function(document) {
 
+                    _dbUse('my_sample_db');
                     db.get(document.id, {
                         revs_info: true
                     }, function(err, doc) {
