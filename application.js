@@ -22,6 +22,7 @@ var express = require('express'),
 
 var app = express();
 var db;
+var vr;
 var cloudant;
 var config = {};
 var fileToUpload;
@@ -128,33 +129,32 @@ initDBConnection();
 _dbGet('config', {selector:{}}, function(err,res){
 	if(!err && res.docs.length>0){
 		config = res.docs[0];		
+
+		vr = watson.visual_recognition({
+		  api_key: config.api_key.visual_recognition,
+		  version: 'v3',
+		  version_date: '2016-05-19'
+		});
+		
+		vr.listCollections({},function(err, res) {
+		   if (!err){
+				var cols = res.collections;
+				for(var i in cols){
+					if(cols[i].name==="faces"){
+						facesCollection = cols[i];
+					}
+				}
+				if(facesCollection===null || facesCollection==undefined){
+					vr.createCollection({name:'faces'}, function(_err, _resp) {
+		   	 			if (!err){
+		   	 				facesCollection = _resp;
+		   	 			}
+		   	 		});
+				}
+		   }
+		});
 	}
 });
-
-//var vr = watson.visual_recognition({
-//  api_key: config.api_key.visual_recognition,
-//  version: 'v3',
-//  version_date: '2016-05-19'
-//});
-
-//vr.listCollections({},function(err, res) {
-//   if (!err){
-//		var cols = res.collections;
-//		for(var i in cols){
-//			if(cols[i].name==="faces"){
-//				facesCollection = cols[i];
-//			}
-//		}
-//		if(facesCollection===null || facesCollection==undefined){
-//			vr.createCollection({name:'faces'}, function(_err, _resp) {
-//   	 			if (!err){
-//   	 				facesCollection = _resp;
-//   	 			}
-//   	 		});
-//		}
-//   }
-//});
-
 
 /*!
  * functions
@@ -280,7 +280,7 @@ app.get('/getFbAccessToken', function(req, res){
   if (!req.query.code) {
     var authUrl = graph.getOauthUrl({
       client_id: config.fb.client_id,
-      redirect_uri: '/getFbAccessToken',
+      redirect_uri: 'https://fb-face-recognition.mybluemix.net/getFbAccessToken',
       scope: config.fb.scope
     });
     if (!req.query.error) res.redirect(authUrl);
@@ -291,7 +291,7 @@ app.get('/getFbAccessToken', function(req, res){
   // code is set, let's get that access token
   graph.authorize({
     client_id:      config.fb.client_id,
-    redirect_uri:   '/getFbAccessToken',
+    redirect_uri:   'https://fb-face-recognition.mybluemix.net/getFbAccessToken',
     client_secret:  config.fb.client_secret,
     code:           req.query.code
   }, function (err, facebookRes) {
