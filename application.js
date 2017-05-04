@@ -242,29 +242,32 @@ var fbRecognize = function(imgId, callback) {
 var recognize = function(imgUrl, _callback){
   httprequest.get({url:'/getFbAccessToken'}, function(err, httpResponse, body){
 	  // vars
-	  var accessToken = body.access_token;
-	  // set access_token to upload image
-	  graph.setAccessToken(accessToken);
-	  // upload image
-	  var params = {
-	    url: imgUrl, 
-	    message:'temp', 
-	    privacy: { value: 'SELF' } // we don't want other people to see it
-	  };
-	  graph.post('/me/photos', params, function(err, r) {
-	    // we have the imgId! now we can ask Facebook to recognize my friends
-	    var imgId = r.id;
-	    // wait 3 seconds before asking Facebook (they recognize asynchronously)
-	    setTimeout(function() {
-	      fbRecognize(imgId, function(result) {
-	        if(result.length === 0) {
-	          _callback({ error: 'Facebook couldn\'t recognize this picture.' });
-	        } else {
-	          _callback(result);
-	        }
-	      });
-	    }, 3000);
-	  });
+	  console.log("recognize ERROR: "+err);
+	  console.log("recognize BODY: "+body);
+	  
+//	  var accessToken = body.access_token;
+//	  // set access_token to upload image
+//	  graph.setAccessToken(accessToken);
+//	  // upload image
+//	  var params = {
+//	    url: imgUrl, 
+//	    message:'temp', 
+//	    privacy: { value: 'SELF' } // we don't want other people to see it
+//	  };
+//	  graph.post('/me/photos', params, function(err, r) {
+//	    // we have the imgId! now we can ask Facebook to recognize my friends
+//	    var imgId = r.id;
+//	    // wait 3 seconds before asking Facebook (they recognize asynchronously)
+//	    setTimeout(function() {
+//	      fbRecognize(imgId, function(result) {
+//	        if(result.length === 0) {
+//	          _callback({ error: 'Facebook couldn\'t recognize this picture.' });
+//	        } else {
+//	          _callback(result);
+//	        }
+//	      });
+//	    }, 3000);
+//	  });
   });
 };   
 
