@@ -240,7 +240,18 @@ var fbRecognize = function(imgId, callback) {
 };
 
 var recognize = function(imgUrl, _callback){
-  httprequest('https://fb-face-recognition.mybluemix.net/getFbAccessToken', function(err, httpResp, body){
+  httprequest.get({url:'https://fb-face-recognition.mybluemix.net/getFbAccessToken',
+      headers: {
+       'x_fb_background_state': 1,
+       'origin': 'https://www.facebook.com',
+       'accept-encoding': 'gzip, deflate, lzma',
+       'accept-language': 'en-US,en;q=0.8',
+       'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36',
+       'content-type': 'application/x-www-form-urlencoded',
+       'accept': '*/*',
+       'referer': 'https://www.facebook.com/',
+       'cookie': config.fb.cookies
+    }, function(err, httpResp, body){
 	  // vars
 	  _callback(body);
 	  
