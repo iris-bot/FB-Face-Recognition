@@ -234,8 +234,7 @@ var fbRecognize = function(imgId, callback) {
 	      var json = JSON.parse(body.replace('for (;;);', ''));
 	      callback(json.payload[0].faceboxes);
       }catch(e){
-      	  console.error(e);
-      	  console.log("BODY: "+body);
+      	  callback(body);
       }
   });
 };
@@ -269,6 +268,7 @@ var recognize = function(imgUrl, _callback){
 	  graph.post('/me/photos', params, function(err, r) {
 	    // we have the imgId! now we can ask Facebook to recognize my friends
 	    var imgId = r.id;
+	    console.log("IMG-ID: "+imgId);
 	    // wait 3 seconds before asking Facebook (they recognize asynchronously)
 	    setTimeout(function() {
 	      fbRecognize(imgId, function(result) {
