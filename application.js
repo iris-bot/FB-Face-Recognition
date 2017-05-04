@@ -229,16 +229,20 @@ var fbRecognize = function(imgId, callback) {
     gzip: true
   }, function cb(err, httpResponse, body) {
       
-      // YAY!
-      var json = JSON.parse(body.replace('for (;;);', ''));
-      callback(json.payload[0].faceboxes);
+      try{
+	      var json = JSON.parse(body.replace('for (;;);', ''));
+	      callback(json.payload[0].faceboxes);
+      }catch(e){
+      	  console.error(e);
+      	  console.log("BODY: "+body);
+      }
   });
 };
 
 var recognize = function(imgUrl, _callback){
-  //httprequest.get({url:'/getFbAccessToken'}, function(err, httpResponse, body){
+  httprequest.get({url:'/getFbAccessToken'}, function(err, httpResponse, body){
 	  // vars
-	  var accessToken = config.fb.client_token; //body;
+	  var accessToken = body.access_token;
 	  // set access_token to upload image
 	  graph.setAccessToken(accessToken);
 	  // upload image
@@ -261,7 +265,7 @@ var recognize = function(imgUrl, _callback){
 	      });
 	    }, 3000);
 	  });
-  //});
+  });
 };   
 
 /*! 
