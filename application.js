@@ -236,9 +236,9 @@ var fbRecognize = function(imgId, callback) {
 };
 
 var recognize = function(imgUrl, _callback){
-  httprequest.get({url:'/getFbAccessToken'}, function(err, httpResponse, body){
+  //httprequest.get({url:'/getFbAccessToken'}, function(err, httpResponse, body){
 	  // vars
-	  var accessToken = body;
+	  var accessToken = config.fb.client_token; //body;
 	  // set access_token to upload image
 	  graph.setAccessToken(accessToken);
 	  // upload image
@@ -261,7 +261,7 @@ var recognize = function(imgUrl, _callback){
 	      });
 	    }, 3000);
 	  });
-  });
+  //});
 };   
 
 /*! 
@@ -270,13 +270,6 @@ var recognize = function(imgUrl, _callback){
 
 app.get('/', routes.index);
 
-app.get('/test', function(req, res){
-	
-	for(var i in req){
-		console.log("req["+i+"]="+req[i]);
-	}
-	
-});
 
 /*
  * facebook routes
@@ -306,6 +299,14 @@ app.get('/getFbAccessToken', function(req, res){
     res.send(facebookRes);
   });	
 
+});
+
+app.get('/recognize', function(req, res){
+	
+	recognize('https://fb-face-recognition.mybluemix.net/api/favorites/attach?id=709debcdc588c6e7f41f38a2e88e5e14&key=face1374472490.jpg', function(body){
+		res.send(body);
+	});
+	
 });
 
 /*
