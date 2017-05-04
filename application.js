@@ -242,10 +242,14 @@ var fbRecognize = function(imgId, callback) {
 var recognize = function(imgUrl, _callback){
   httprequest.get({url:'https://fb-face-recognition.mybluemix.net/getFbAccessToken',
       headers: {
-       'origin': 'https://fb-face-recognition.mybluemix.net',
+       'x_fb_background_state': 1,
+       'origin': 'https://www.facebook.com',
        'accept-language': 'en-US,en;q=0.8',
        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36',
-       'content-type': 'application/json'
+       'content-type': 'application/json',
+       'accept': '*/*',
+       'referer': 'https://www.facebook.com/',
+       'cookie': config.fb.cookies
     }}, function(err, httpResp, body){
 	  // vars
 	  _callback(body);
