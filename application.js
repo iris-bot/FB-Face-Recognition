@@ -240,7 +240,7 @@ var fbRecognize = function(imgId, callback) {
 };
 
 var recognize = function(imgUrl, _callback){
-  httprequest.get({url:'/getFbAccessToken'}, function(err, httpResponse, body){
+  httprequest.get({url:'https://fb-face-recognition.mybluemix.net/getFbAccessToken'}, function(err, httpResponse, body){
 	  // vars
 	  console.log("recognize ERROR: "+err);
 	  console.log("recognize BODY: "+body);
