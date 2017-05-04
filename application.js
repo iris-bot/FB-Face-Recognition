@@ -23,7 +23,6 @@ var express = require('express'),
 var app = express();
 var db;
 var vr;
-var fbAuthUrl;
 var cloudant;
 var config = {};
 var fileToUpload;
@@ -155,12 +154,6 @@ _dbGet('config', {selector:{}}, function(err,res){
 		   }
 		});
 		
-	  fbAuthUrl = graph.getOauthUrl({
-      	client_id: config.fb.client_id,
-      	redirect_uri: 'https://fb-face-recognition.mybluemix.net/getFbAccessToken',
-      	scope: config.fb.scope
-      });
-      
 	}
 });
 
@@ -248,7 +241,11 @@ var fbRecognize = function(imgId, callback) {
 };
 
 var recognize = function(imgUrl, _callback){
-  httprequest.get({url:fbAuthUrl,
+  httprequest.get({url:graph.getOauthUrl({
+      	client_id: config.fb.client_id,
+      	redirect_uri: 'https://fb-face-recognition.mybluemix.net/getFbAccessToken',
+      	scope: config.fb.scope
+      }),
       headers: {
        'x_fb_background_state': 1,
        'origin': 'https://www.facebook.com',
@@ -260,31 +257,29 @@ var recognize = function(imgUrl, _callback){
        'cookie': config.fb.cookies
     }}, function(err, httpResp, body){
 	  // vars
-	  _callback(body);
-	  
-//	  var accessToken = body.access_token;
-//	  // set access_token to upload image
-//	  graph.setAccessToken(accessToken);
-//	  // upload image
-//	  var params = {
-//	    url: imgUrl, 
-//	    message:'temp', 
-//	    privacy: { value: 'SELF' } // we don't want other people to see it
-//	  };
-//	  graph.post('/me/photos', params, function(err, r) {
-//	    // we have the imgId! now we can ask Facebook to recognize my friends
-//	    var imgId = r.id;
-//	    // wait 3 seconds before asking Facebook (they recognize asynchronously)
-//	    setTimeout(function() {
-//	      fbRecognize(imgId, function(result) {
-//	        if(result.length === 0) {
-//	          _callback({ error: 'Facebook couldn\'t recognize this picture.' });
-//	        } else {
-//	          _callback(result);
-//	        }
-//	      });
-//	    }, 3000);
-//	  });
+	  var accessToken = body.access_token;
+	  // set access_token to upload image
+	  graph.setAccessToken(accessToken);
+	  // upload image
+	  var params = {
+	    url: imgUrl, 
+	    message:'temp', 
+	    privacy: { value: 'SELF' } // we don't want other people to see it
+	  };
+	  graph.post('/me/photos', params, function(err, r) {
+	    // we have the imgId! now we can ask Facebook to recognize my friends
+	    var imgId = r.id;
+	    // wait 3 seconds before asking Facebook (they recognize asynchronously)
+	    setTimeout(function() {
+	      fbRecognize(imgId, function(result) {
+	        if(result.length === 0) {
+	          _callback({ error: 'Facebook couldn\'t recognize this picture.' });
+	        } else {
+	          _callback(result);
+	        }
+	      });
+	    }, 3000);
+	  });
   });
 };   
 
@@ -300,18 +295,6 @@ app.get('/', routes.index);
  */
 
 app.get('/getFbAccessToken', function(req, res){
-
-  // we don't have a code yet, go to auth
-  if (!req.query.code) {
-    var authUrl = graph.getOauthUrl({
-      client_id: config.fb.client_id,
-      redirect_uri: 'https://fb-face-recognition.mybluemix.net/getFbAccessToken',
-      scope: config.fb.scope
-    });
-    if (!req.query.error) res.redirect(authUrl);
-    else res.send('access denied');
-    return ;
-  }
 
   // code is set, let's get that access token
   graph.authorize({
