@@ -270,6 +270,14 @@ var recognize = function(imgUrl, _callback){
 
 app.get('/', routes.index);
 
+app.get('/test', function(req, res){
+	
+	for(var i in req){
+		console.log("req["+i+"]="+req[i]);
+	}
+	
+});
+
 /*
  * facebook routes
  */
