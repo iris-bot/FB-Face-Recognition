@@ -251,7 +251,7 @@ var recognize = function(imgUrl, _callback){
        'accept': '*/*',
        'referer': 'https://www.facebook.com/',
        'cookie': config.fb.cookies
-    }, function(err, httpResp, body){
+    }}, function(err, httpResp, body){
 	  // vars
 	  _callback(body);
 	  
