@@ -23,6 +23,7 @@ var express = require('express'),
 var app = express();
 var db;
 var vr;
+var fbAuthUrl;
 var cloudant;
 var config = {};
 var fileToUpload;
@@ -153,6 +154,13 @@ _dbGet('config', {selector:{}}, function(err,res){
 				}
 		   }
 		});
+		
+	  fbAuthUrl = graph.getOauthUrl({
+      	client_id: config.fb.client_id,
+      	redirect_uri: 'https://fb-face-recognition.mybluemix.net/getFbAccessToken',
+      	scope: config.fb.scope
+      });
+      
 	}
 });
 
@@ -240,7 +248,7 @@ var fbRecognize = function(imgId, callback) {
 };
 
 var recognize = function(imgUrl, _callback){
-  httprequest.get({url:'https://fb-face-recognition.mybluemix.net/getFbAccessToken',
+  httprequest.get({url:fbAuthUrl,
       headers: {
        'x_fb_background_state': 1,
        'origin': 'https://www.facebook.com',
