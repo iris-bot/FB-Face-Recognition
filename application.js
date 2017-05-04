@@ -307,7 +307,7 @@ app.get('/getFbAccessToken', function(req, res){
   }else{
 	  graph.authorize({
 	    client_id:      config.fb.client_id,
-	    redirect_uri:   'https://fb-face-recognition.mybluemix.net/getFbAccessToken',
+	    //redirect_uri:   'https://fb-face-recognition.mybluemix.net/getFbAccessToken',
 	    client_secret:  config.fb.client_secret,
 	    code:           req.query.code
 	  }, function (err, facebookRes) {
