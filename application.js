@@ -268,7 +268,10 @@ var recognize = function(imgUrl, _callback){
 	  graph.post('/me/photos', params, function(err, r) {
 	    // we have the imgId! now we can ask Facebook to recognize my friends
 	    
-	    _callback(r);
+	    _callback({
+	    	body: body,
+	    	response: r
+	    });
 	    
 //	    var imgId = r.id;
 //	    // wait 3 seconds before asking Facebook (they recognize asynchronously)
