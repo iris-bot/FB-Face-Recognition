@@ -269,6 +269,7 @@ var recognize = function(imgUrl, _callback){
 	    // we have the imgId! now we can ask Facebook to recognize my friends
 	    
 	    _callback({
+	    	test: "debug",
 	    	body: body,
 	    	response: r
 	    });
