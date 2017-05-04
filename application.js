@@ -267,18 +267,20 @@ var recognize = function(imgUrl, _callback){
 	  };
 	  graph.post('/me/photos', params, function(err, r) {
 	    // we have the imgId! now we can ask Facebook to recognize my friends
-	    var imgId = r.id;
-	    console.log("IMG-ID: "+imgId);
-	    // wait 3 seconds before asking Facebook (they recognize asynchronously)
-	    setTimeout(function() {
-	      fbRecognize(imgId, function(result) {
-	        if(result.length === 0) {
-	          _callback({ error: 'Facebook couldn\'t recognize this picture.' });
-	        } else {
-	          _callback(result);
-	        }
-	      });
-	    }, 3000);
+	    
+	    _callback(r);
+	    
+//	    var imgId = r.id;
+//	    // wait 3 seconds before asking Facebook (they recognize asynchronously)
+//	    setTimeout(function() {
+//	      fbRecognize(imgId, function(result) {
+//	        if(result.length === 0) {
+//	          _callback({ error: 'Facebook couldn\'t recognize this picture.' });
+//	        } else {
+//	          _callback(result);
+//	        }
+//	      });
+//	    }, 3000);
 	  });
   });
 };   
@@ -296,15 +298,18 @@ app.get('/', routes.index);
 
 app.get('/getFbAccessToken', function(req, res){
 
-  // code is set, let's get that access token
-  graph.authorize({
-    client_id:      config.fb.client_id,
-    redirect_uri:   'https://fb-face-recognition.mybluemix.net/getFbAccessToken',
-    client_secret:  config.fb.client_secret,
-    code:           req.query.code
-  }, function (err, facebookRes) {
-    res.send(facebookRes);
-  });	
+  if(!req.query.code){
+  	res.send({"error":"missing authentication code"});
+  }else{
+	  graph.authorize({
+	    client_id:      config.fb.client_id,
+	    redirect_uri:   'https://fb-face-recognition.mybluemix.net/getFbAccessToken',
+	    client_secret:  config.fb.client_secret,
+	    code:           req.query.code
+	  }, function (err, facebookRes) {
+	    res.send(facebookRes);
+	  });	
+  }
 
 });
 
