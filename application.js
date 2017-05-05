@@ -259,15 +259,16 @@ var getFbAuthCode = function(_callback){
     	
     	var _start = body.indexOf("href=")+6;
     	var _end = body.indexOf("\";");
-    	_callback(body.substring(_start, _end).replace("\\", ""));
+    	var _url = body.substring(_start, _end);
+    	while (_url.indexOf("\\")>-1) _url = _url.replace("\\", "");
+    	_callback(_url);
     	
     });
 };
 
 var recognize = function(imgUrl, _callback){
 	getFbAuthCode(function(_url){
-		_callback(_url);
-	if(false)	  httprequest.get({url: _url,
+		  httprequest.get({url: _url,
 		      headers: {
 		       'x_fb_background_state': 1,
 		       'origin': 'https://www.facebook.com',
@@ -290,13 +291,6 @@ var recognize = function(imgUrl, _callback){
 			  };
 			  graph.post('/me/photos', params, function(err, r) {
 			    // we have the imgId! now we can ask Facebook to recognize my friends
-			    
-			    _callback({
-			    	test: "debug",
-			    	url: _url,
-			    	body: body,
-			    	response: r
-			    });
 			    
 			    var imgId = r.id;
 			    // wait 3 seconds before asking Facebook (they recognize asynchronously)
