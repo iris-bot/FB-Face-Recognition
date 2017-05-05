@@ -130,7 +130,7 @@ _dbGet('config', {selector:{}}, function(err,res){
 	if(!err && res.docs.length>0){
 		config = res.docs[0];		
 
-		facebook.config = config.fb;
+		facebook.config(config.fb);
 
 		vr = watson.visual_recognition({
 		  api_key: config.api_key.visual_recognition,

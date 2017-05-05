@@ -6,25 +6,9 @@
 
 var
 	graph = require('fbgraph'),
-	httprequest = require('request');
+	httprequest = require('request'),
 
-module.exports = {
-
-	/*!
-	 * keep this information in a safe place
-	 * and overwrite it in runtime
-	 */
-	config: {
-		client_id: "your client id",
-		client_secret: "your client secret",
-		client_token: "your client token",
-		scope: "publish_actions",
-		cookies: "fr=...; sb=....; lu=...; datr=...; dats=1; locale=...; c_user=...; xs=...; pl=n; act=...; presence=...",
-		req_params: "__user=...",
-		url_redirect: "url to your authentication end-point"
-	},
-	
-	httpheaders: function() {
+	httpheaders = function() {
 		return {
 			'x_fb_background_state': 1,
 			'origin': 'https://www.facebook.com',
@@ -35,27 +19,7 @@ module.exports = {
 		};
 	},
 
-	/*!
-	 * expose this method as your authentication end-point
-	 */
-	getAccessToken: function(req, res) {
-		if (!req.query.code) {
-			res.send({
-				"error": "missing authentication code"
-			});
-		} else {
-			graph.authorize({
-				client_id: this.config.client_id,
-				redirect_uri: this.config.url_redirect,
-				client_secret: this.config.client_secret,
-				code: req.query.code
-			}, function(err, facebookRes) {
-				res.send(facebookRes);
-			});
-		}
-	},
-
-	getAuthCodeURL: function(_callback) {
+	getAuthCodeURL = function(_callback) {
 		var headers = this.httpheaders();
 		headers['content-type'] = 'application/json';
 		headers['cookie'] = this.config.cookies;
@@ -75,7 +39,7 @@ module.exports = {
 		});
 	},
 
-	getRecognitionMetadata: function(imgId, callback) {
+	getRecognitionMetadata = function(imgId, callback) {
 		var headers = this.httpheaders();
 		headers['content-type'] = 'application/x-www-form-urlencoded';
 		headers['cookie'] = this.config.cookies;
@@ -94,44 +58,82 @@ module.exports = {
 		});
 	},
 
-	/*!
-	 * method to retrieve face recognition metadata
-	 */
-	recognize: function(imgUrl, _callback) {
-		var headers = this.httpheaders();
-		headers['content-type'] = 'application/json';
-		headers['cookie'] = this.config.cookies;
-		this.getAuthCodeURL(function(_url) {
-			httprequest.get({
-				url: _url,
-				headers: headers
-			}, function(err, httpResp, _body) {
-				var body = JSON.parse(_body);
-				var accessToken = body.access_token;
-				graph.setAccessToken(accessToken);
-				var params = {
-					url: imgUrl,
-					message: 'temp',
-					privacy: {
-						value: 'SELF'
-					}
-				};
-				graph.post('/me/photos', params, function(err, r) {
-					var imgId = r.id;
-					setTimeout(function() {
-						this.getRecognitionMetadata(imgId, function(result) {
-							if (result.length === 0) {
-								_callback({
-									error: 'Facebook couldn\'t recognize this picture.'
-								});
-							} else {
-								_callback(result);
-							}
-						});
-					}, 3000);
-				});
-			});
+	config = {
+		client_id: "your client id",
+		client_secret: "your client secret",
+		client_token: "your client token",
+		scope: "publish_actions",
+		cookies: "fr=...; sb=....; lu=...; datr=...; dats=1; locale=...; c_user=...; xs=...; pl=n; act=...; presence=...",
+		req_params: "__user=...",
+		url_redirect: "url to your authentication end-point"
+	};
+
+
+
+/*!
+ * keep this information in a safe place
+ * and overwrite it in runtime
+ */
+exports.config = function(cfg) {
+	config = cfg;
+};
+
+/*!
+ * expose this method as your authentication end-point
+ */
+exports.getAccessToken = function(req, res) {
+	if (!req.query.code) {
+		res.send({
+			"error": "missing authentication code"
+		});
+	} else {
+		graph.authorize({
+			client_id: config.client_id,
+			redirect_uri: config.url_redirect,
+			client_secret: config.client_secret,
+			code: req.query.code
+		}, function(err, facebookRes) {
+			res.send(facebookRes);
 		});
 	}
+};
 
+/*!
+ * method to retrieve face recognition metadata
+ */
+exports.recognize = function(imgUrl, _callback) {
+	var headers = httpheaders();
+	headers['content-type'] = 'application/json';
+	headers['cookie'] = config.cookies;
+	this.getAuthCodeURL(function(_url) {
+		httprequest.get({
+			url: _url,
+			headers: headers
+		}, function(err, httpResp, _body) {
+			var body = JSON.parse(_body);
+			var accessToken = body.access_token;
+			graph.setAccessToken(accessToken);
+			var params = {
+				url: imgUrl,
+				message: 'temp',
+				privacy: {
+					value: 'SELF'
+				}
+			};
+			graph.post('/me/photos', params, function(err, r) {
+				var imgId = r.id;
+				setTimeout(function() {
+					getRecognitionMetadata(imgId, function(result) {
+						if (result.length === 0) {
+							_callback({
+								error: 'Facebook couldn\'t recognize this picture.'
+							});
+						} else {
+							_callback(result);
+						}
+					});
+				}, 3000);
+			});
+		});
+	});
 };
