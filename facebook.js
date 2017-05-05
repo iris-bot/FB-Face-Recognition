@@ -18,7 +18,7 @@ var
 		};
 	};
 
-exports.facebook = {
+module.exports = {
 
 	/*!
 	 * keep this information in a safe place
