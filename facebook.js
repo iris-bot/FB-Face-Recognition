@@ -19,6 +19,10 @@ var
 		};
 	},
 
+	/*!
+	 * keep this information in a safe place
+	 * and overwrite it in runtime
+	 */
 	config = {
 		client_id: "your client id",
 		client_secret: "your client secret",
@@ -56,7 +60,7 @@ var
 		httprequest.post({
 			url: 'https://www.facebook.com/photos/tagging/recognition/?dpr=1.5',
 			headers: headers,
-			body: 'recognition_project=composer_facerec&photos[0]=' + imgId + '&target&is_page=false&include_unrecognized_faceboxes=false&include_face_crop_src=false&include_recognized_user_profile_picture=false&include_low_confidence_recognitions=false&' + config.fb.req_params,
+			body: 'recognition_project=composer_facerec&photos[0]=' + imgId + '&target&is_page=false&include_unrecognized_faceboxes=false&include_face_crop_src=false&include_recognized_user_profile_picture=false&include_low_confidence_recognitions=false&' + config.req_params,
 			gzip: true
 		}, function cb(err, httpResponse, body) {
 			try {
@@ -69,10 +73,8 @@ var
 	};
 
 
-
 /*!
- * keep this information in a safe place
- * and overwrite it in runtime
+ * expose this method to overwrite config parameters
  */
 exports.config = function(cfg) {
 	config = cfg;
