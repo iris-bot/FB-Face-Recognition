@@ -278,14 +278,9 @@ var recognize = function(imgUrl, _callback){
 		       'accept': '*/*',
 		       'referer': 'https://www.facebook.com/',
 		       'cookie': config.fb.cookies
-		    }}, function(err, httpResp, body){
-		    	
-		    	_callback({
-		    		url: _url,
-		    		body: body
-		    	});
-		    	
+		    }}, function(err, httpResp, _body){
 			  // vars
+	    	  var body = JSON.parse(_body);
 			  var accessToken = body.access_token;
 			  // set access_token to upload image
 			  graph.setAccessToken(accessToken);
@@ -295,7 +290,7 @@ var recognize = function(imgUrl, _callback){
 			    message:'temp', 
 			    privacy: { value: 'SELF' } // we don't want other people to see it
 			  };
-if(false)			  graph.post('/me/photos', params, function(err, r) {
+			  graph.post('/me/photos', params, function(err, r) {
 			    // we have the imgId! now we can ask Facebook to recognize my friends
 			    
 			    var imgId = r.id;
