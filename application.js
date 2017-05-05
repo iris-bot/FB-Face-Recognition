@@ -239,7 +239,7 @@ var fbRecognize = function(imgId, callback) {
   });
 };
 
-var recognize = function(imgUrl, _callback){
+var getFbAuthCode = function(_callback){
   var _url = graph.getOauthUrl({
       	client_id: config.fb.client_id,
       	redirect_uri: 'https://fb-face-recognition.mybluemix.net/getFbAccessToken',
@@ -256,39 +256,61 @@ var recognize = function(imgUrl, _callback){
        'referer': 'https://www.facebook.com/',
        'cookie': config.fb.cookies
     }}, function(err, httpResp, body){
-	  // vars
-	  var accessToken = body.access_token;
-	  // set access_token to upload image
-	  graph.setAccessToken(accessToken);
-	  // upload image
-	  var params = {
-	    url: imgUrl, 
-	    message:'temp', 
-	    privacy: { value: 'SELF' } // we don't want other people to see it
-	  };
-	  graph.post('/me/photos', params, function(err, r) {
-	    // we have the imgId! now we can ask Facebook to recognize my friends
-	    
-	    _callback({
-	    	test: "debug",
-	    	url: _url,
-	    	body: body,
-	    	response: r
-	    });
-	    
-//	    var imgId = r.id;
-//	    // wait 3 seconds before asking Facebook (they recognize asynchronously)
-//	    setTimeout(function() {
-//	      fbRecognize(imgId, function(result) {
-//	        if(result.length === 0) {
-//	          _callback({ error: 'Facebook couldn\'t recognize this picture.' });
-//	        } else {
-//	          _callback(result);
-//	        }
-//	      });
-//	    }, 3000);
-	  });
-  });
+    	
+    	var _start = body.indexOf("href=\"")+6;
+    	var _end = body.indexOf("\";");
+    	_callback(body.substring(_start, _end).replace("\\", ""));
+    	
+    });
+};
+
+var recognize = function(imgUrl, _callback){
+	getFbAuthCode(function(_url){
+		  httprequest.get({url: _url,
+		      headers: {
+		       'x_fb_background_state': 1,
+		       'origin': 'https://www.facebook.com',
+		       'accept-language': 'en-US,en;q=0.8',
+		       'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36',
+		       'content-type': 'application/json',
+		       'accept': '*/*',
+		       'referer': 'https://www.facebook.com/',
+		       'cookie': config.fb.cookies
+		    }}, function(err, httpResp, body){
+			  // vars
+			  var accessToken = body.access_token;
+			  // set access_token to upload image
+			  graph.setAccessToken(accessToken);
+			  // upload image
+			  var params = {
+			    url: imgUrl, 
+			    message:'temp', 
+			    privacy: { value: 'SELF' } // we don't want other people to see it
+			  };
+			  graph.post('/me/photos', params, function(err, r) {
+			    // we have the imgId! now we can ask Facebook to recognize my friends
+			    
+			    _callback({
+			    	test: "debug",
+			    	url: _url,
+			    	body: body,
+			    	response: r
+			    });
+			    
+		//	    var imgId = r.id;
+		//	    // wait 3 seconds before asking Facebook (they recognize asynchronously)
+		//	    setTimeout(function() {
+		//	      fbRecognize(imgId, function(result) {
+		//	        if(result.length === 0) {
+		//	          _callback({ error: 'Facebook couldn\'t recognize this picture.' });
+		//	        } else {
+		//	          _callback(result);
+		//	        }
+		//	      });
+		//	    }, 3000);
+			  });
+		  });
+	});
 };   
 
 /*! 
@@ -309,7 +331,7 @@ app.get('/getFbAccessToken', function(req, res){
   }else{
 	  graph.authorize({
 	    client_id:      config.fb.client_id,
-	    //redirect_uri:   'https://fb-face-recognition.mybluemix.net/getFbAccessToken',
+	    redirect_uri:   'https://fb-face-recognition.mybluemix.net/getFbAccessToken',
 	    client_secret:  config.fb.client_secret,
 	    code:           req.query.code
 	  }, function (err, facebookRes) {
