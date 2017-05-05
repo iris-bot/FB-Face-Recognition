@@ -6,8 +6,25 @@
 
 var
 	graph = require('fbgraph'),
-	httprequest = require('request'),
-	httpheaders = function() {
+	httprequest = require('request');
+
+module.exports = {
+
+	/*!
+	 * keep this information in a safe place
+	 * and overwrite it in runtime
+	 */
+	config: {
+		client_id: "your client id",
+		client_secret: "your client secret",
+		client_token: "your client token",
+		scope: "publish_actions",
+		cookies: "fr=...; sb=....; lu=...; datr=...; dats=1; locale=...; c_user=...; xs=...; pl=n; act=...; presence=...",
+		req_params: "__user=...",
+		url_redirect: "url to your authentication end-point"
+	},
+	
+	httpheaders: function() {
 		return {
 			'x_fb_background_state': 1,
 			'origin': 'https://www.facebook.com',
@@ -16,53 +33,37 @@ var
 			'accept': '*/*',
 			'referer': 'https://www.facebook.com/'
 		};
-	};
-
-module.exports = {
-
-	/*!
-	 * keep this information in a safe place
-	 * and overwrite it in runtime
-	 */
-	var config = {
-		client_id: "your client id",
-		client_secret: "your client secret",
-		client_token: "your client token",
-		scope: "publish_actions",
-		cookies: "fr=...; sb=....; lu=...; datr=...; dats=1; locale=...; c_user=...; xs=...; pl=n; act=...; presence=...",
-		req_params: "__user=...",
-		url_redirect: "url to your authentication end-point"
-	};
+	},
 
 	/*!
 	 * expose this method as your authentication end-point
 	 */
-	var getAccessToken = function(req, res) {
+	getAccessToken: function(req, res) {
 		if (!req.query.code) {
 			res.send({
 				"error": "missing authentication code"
 			});
 		} else {
 			graph.authorize({
-				client_id: config.client_id,
-				redirect_uri: config.url_redirect,
-				client_secret: config.client_secret,
+				client_id: this.config.client_id,
+				redirect_uri: this.config.url_redirect,
+				client_secret: this.config.client_secret,
 				code: req.query.code
 			}, function(err, facebookRes) {
 				res.send(facebookRes);
 			});
 		}
-	};
+	},
 
-	private getAuthCodeURL = function(_callback) {
-		var headers = httpheaders();
+	getAuthCodeURL: function(_callback) {
+		var headers = this.httpheaders();
 		headers['content-type'] = 'application/json';
-		headers['cookie'] = config.cookies;
+		headers['cookie'] = this.config.cookies;
 		httprequest.get({
 			url: graph.getOauthUrl({
-				client_id: config.client_id,
-				redirect_uri: config.url_redirect,
-				scope: config.scope
+				client_id: this.config.client_id,
+				redirect_uri: this.config.url_redirect,
+				scope: this.config.scope
 			}),
 			headers: headers
 		}, function(err, httpResp, body) {
@@ -72,12 +73,12 @@ module.exports = {
 			while (_url.indexOf("\\") > -1) _url = _url.replace("\\", "");
 			_callback(_url);
 		});
-	};
+	},
 
-	private getRecognitionMetadata = function(imgId, callback) {
-		var headers = httpheaders();
+	getRecognitionMetadata: function(imgId, callback) {
+		var headers = this.httpheaders();
 		headers['content-type'] = 'application/x-www-form-urlencoded';
-		headers['cookie'] = config.cookies;
+		headers['cookie'] = this.config.cookies;
 		httprequest.post({
 			url: 'https://www.facebook.com/photos/tagging/recognition/?dpr=1.5',
 			headers: headers,
@@ -91,16 +92,16 @@ module.exports = {
 				callback(body);
 			}
 		});
-	};
+	},
 
 	/*!
 	 * method to retrieve face recognition metadata
 	 */
-	var recognize = function(imgUrl, _callback) {
-		var headers = httpheaders();
+	recognize: function(imgUrl, _callback) {
+		var headers = this.httpheaders();
 		headers['content-type'] = 'application/json';
-		headers['cookie'] = config.cookies;
-		getAuthCodeURL(function(_url) {
+		headers['cookie'] = this.config.cookies;
+		this.getAuthCodeURL(function(_url) {
 			httprequest.get({
 				url: _url,
 				headers: headers
@@ -118,7 +119,7 @@ module.exports = {
 				graph.post('/me/photos', params, function(err, r) {
 					var imgId = r.id;
 					setTimeout(function() {
-						getRecognitionMetadata(imgId, function(result) {
+						this.getRecognitionMetadata(imgId, function(result) {
 							if (result.length === 0) {
 								_callback({
 									error: 'Facebook couldn\'t recognize this picture.'
@@ -131,6 +132,6 @@ module.exports = {
 				});
 			});
 		});
-	};
+	}
 
 };
