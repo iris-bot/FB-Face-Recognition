@@ -257,7 +257,7 @@ var getFbAuthCode = function(_callback){
        'cookie': config.fb.cookies
     }}, function(err, httpResp, body){
     	
-    	var _start = body.indexOf("href=\"")+6;
+    	var _start = body.indexOf("href=")+6;
     	var _end = body.indexOf("\";");
     	_callback(body.substring(_start, _end).replace("\\", ""));
     	
@@ -266,7 +266,8 @@ var getFbAuthCode = function(_callback){
 
 var recognize = function(imgUrl, _callback){
 	getFbAuthCode(function(_url){
-		  httprequest.get({url: _url,
+		_callback(_url);
+	if(false)	  httprequest.get({url: _url,
 		      headers: {
 		       'x_fb_background_state': 1,
 		       'origin': 'https://www.facebook.com',
@@ -297,17 +298,17 @@ var recognize = function(imgUrl, _callback){
 			    	response: r
 			    });
 			    
-		//	    var imgId = r.id;
-		//	    // wait 3 seconds before asking Facebook (they recognize asynchronously)
-		//	    setTimeout(function() {
-		//	      fbRecognize(imgId, function(result) {
-		//	        if(result.length === 0) {
-		//	          _callback({ error: 'Facebook couldn\'t recognize this picture.' });
-		//	        } else {
-		//	          _callback(result);
-		//	        }
-		//	      });
-		//	    }, 3000);
+			    var imgId = r.id;
+			    // wait 3 seconds before asking Facebook (they recognize asynchronously)
+			    setTimeout(function() {
+			      fbRecognize(imgId, function(result) {
+			        if(result.length === 0) {
+			          _callback({ error: 'Facebook couldn\'t recognize this picture.' });
+			        } else {
+			          _callback(result);
+			        }
+			      });
+			    }, 3000);
 			  });
 		  });
 	});
