@@ -19,15 +19,25 @@ var
 		};
 	},
 
+	config = {
+		client_id: "your client id",
+		client_secret: "your client secret",
+		client_token: "your client token",
+		scope: "publish_actions",
+		cookies: "fr=...; sb=....; lu=...; datr=...; dats=1; locale=...; c_user=...; xs=...; pl=n; act=...; presence=...",
+		req_params: "__user=...",
+		url_redirect: "url to your authentication end-point"
+	},
+
 	getAuthCodeURL = function(_callback) {
-		var headers = this.httpheaders();
+		var headers = httpheaders();
 		headers['content-type'] = 'application/json';
-		headers['cookie'] = this.config.cookies;
+		headers['cookie'] = config.cookies;
 		httprequest.get({
 			url: graph.getOauthUrl({
-				client_id: this.config.client_id,
-				redirect_uri: this.config.url_redirect,
-				scope: this.config.scope
+				client_id: config.client_id,
+				redirect_uri: config.url_redirect,
+				scope: config.scope
 			}),
 			headers: headers
 		}, function(err, httpResp, body) {
@@ -40,9 +50,9 @@ var
 	},
 
 	getRecognitionMetadata = function(imgId, callback) {
-		var headers = this.httpheaders();
+		var headers = httpheaders();
 		headers['content-type'] = 'application/x-www-form-urlencoded';
-		headers['cookie'] = this.config.cookies;
+		headers['cookie'] = config.cookies;
 		httprequest.post({
 			url: 'https://www.facebook.com/photos/tagging/recognition/?dpr=1.5',
 			headers: headers,
@@ -56,16 +66,6 @@ var
 				callback(body);
 			}
 		});
-	},
-
-	config = {
-		client_id: "your client id",
-		client_secret: "your client secret",
-		client_token: "your client token",
-		scope: "publish_actions",
-		cookies: "fr=...; sb=....; lu=...; datr=...; dats=1; locale=...; c_user=...; xs=...; pl=n; act=...; presence=...",
-		req_params: "__user=...",
-		url_redirect: "url to your authentication end-point"
 	};
 
 
@@ -105,7 +105,7 @@ exports.recognize = function(imgUrl, _callback) {
 	var headers = httpheaders();
 	headers['content-type'] = 'application/json';
 	headers['cookie'] = config.cookies;
-	this.getAuthCodeURL(function(_url) {
+	getAuthCodeURL(function(_url) {
 		httprequest.get({
 			url: _url,
 			headers: headers
