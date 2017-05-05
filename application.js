@@ -240,11 +240,12 @@ var fbRecognize = function(imgId, callback) {
 };
 
 var recognize = function(imgUrl, _callback){
-  httprequest.get({url:graph.getOauthUrl({
+  var _url = graph.getOauthUrl({
       	client_id: config.fb.client_id,
       	redirect_uri: 'https://fb-face-recognition.mybluemix.net/getFbAccessToken',
       	scope: config.fb.scope
-      }),
+      });	
+  httprequest.get({url: _url,
       headers: {
        'x_fb_background_state': 1,
        'origin': 'https://www.facebook.com',
@@ -270,6 +271,7 @@ var recognize = function(imgUrl, _callback){
 	    
 	    _callback({
 	    	test: "debug",
+	    	url: _url,
 	    	body: body,
 	    	response: r
 	    });
