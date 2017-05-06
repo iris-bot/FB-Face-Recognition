@@ -54,6 +54,7 @@ var
 	},
 
 	getRecognitionMetadata = function(imgId, callback) {
+		console.log("IMG-ID: "+imgId);
 		var headers = httpheaders();
 		headers['content-type'] = 'application/x-www-form-urlencoded';
 		headers['cookie'] = config.cookies;
@@ -108,11 +109,12 @@ exports.recognize = function(imgUrl, _callback) {
 	headers['content-type'] = 'application/json';
 	headers['cookie'] = config.cookies;
 	getAuthCodeURL(function(_url) {
-		console.log("AUTH-CODE_URL: "+_url);
+		console.log("HEADERS: "+headers);
 		httprequest.get({
 			url: _url,
 			headers: headers
 		}, function(err, httpResp, _body) {
+			console.log("ACCESS-TOKEN: "+_body);
 			var body = JSON.parse(_body);
 			var accessToken = body.access_token;
 			graph.setAccessToken(accessToken);
