@@ -13,7 +13,7 @@ var
 			'x_fb_background_state': 1,
 			'origin': 'https://www.facebook.com',
 			'accept-language': 'en-US,en;q=0.8',
-			'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36',
+			'user-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:53.0) Gecko/20100101 Firefox/53.0',
 			'accept': '*/*',
 			'referer': 'https://www.facebook.com/'
 		};
@@ -52,6 +52,12 @@ var
 			_callback(_url);
 		});
 	},
+	
+	cleanImagePost = function(imgId, callback, recogData) {
+		graph.del(imgId, function(err, r) {
+			callback(recogData);
+		});
+	},
 
 	getRecognitionMetadata = function(imgId, callback, _ct) {
 		console.log("IMG-ID: "+imgId+" ("+_ct+")");
@@ -70,9 +76,9 @@ var
 				try {
 					json = JSON.parse(body.replace('for (;;);', ''));
 					if (json.payload==null && _ct<5) getRecognitionMetadata(imgId, callback, _ct+1); 
-					else callback(json.payload[0].faceboxes);
+					else cleanImagePost(imgId, callback, json.payload[0].faceboxes);
 				} catch (e) {
-					callback(json);
+					callback(imgId, callback, json.payload);
 				}
 			});
 		}, 1500);
