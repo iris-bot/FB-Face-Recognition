@@ -108,6 +108,7 @@ exports.recognize = function(imgUrl, _callback) {
 	headers['content-type'] = 'application/json';
 	headers['cookie'] = config.cookies;
 	getAuthCodeURL(function(_url) {
+		console.log("AUTH-CODE_URL: "+_url);
 		httprequest.get({
 			url: _url,
 			headers: headers
