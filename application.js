@@ -220,9 +220,11 @@ app.get('/', routes.index);
 app.get('/getFbAccessToken', facebook.getAccessToken);
 
 app.post('/api/fb/recognize', function(req, res){
+	console.log("RECOGNIZE: "+req.body);
+	console.log("RECOGNIZE: "+req.query);
 	var imgUrl = req.body.img_url;
 	console.log("RECOGNIZE: "+imgUrl);
-	facebook.recognize(imgUrl, function(metadata){
+	if(imgUrl) facebook.recognize(imgUrl, function(metadata){
 		//res.write(JSON.stringify(metadata));
 		//res.end;
 		res.send(metadata);
