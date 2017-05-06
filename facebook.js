@@ -53,7 +53,8 @@ var
 		});
 	},
 
-	getRecognitionMetadata = function(imgId, callback) {
+	getRecognitionMetadata = function(imgId, callback, _ct) {
+		console.log("IMG-ID: "+imgId+" ("+_ct+")");
 		var headers = httpheaders();
 		headers['accept-encoding'] = 'gzip, deflate, lzma';
 		headers['content-type'] = 'application/x-www-form-urlencoded';
@@ -68,13 +69,13 @@ var
 				var json;
 				try {
 					json = JSON.parse(body.replace('for (;;);', ''));
-					if (json.payload === null) getRecognitionMetadata(imgId, callback);
+					if (json.payload==null && _ct<5) getRecognitionMetadata(imgId, callback, _ct+1); 
 					else callback(json.payload[0].faceboxes);
 				} catch (e) {
 					callback(json);
 				}
 			});
-		}, 1000);
+		}, 1500);
 	};
 
 
@@ -137,7 +138,7 @@ exports.recognize = function(imgUrl, _callback) {
 					} else {
 						_callback(result);
 					}
-				});
+				}, 0);
 			});
 		});
 	});

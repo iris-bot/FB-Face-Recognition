@@ -221,7 +221,7 @@ app.get('/getFbAccessToken', facebook.getAccessToken);
 
 app.get('/recognize', function(req, res){
 	
-	var imgUrl = "http://fb-face-recognition.mybluemix.net/api/favorites/attach?id=520a17b3a7531fee7abf8a9c65280527&key=face1857556337.jpg";
+	var imgUrl = "http://fb-face-recognition.mybluemix.net/api/favorites/attach?id=8033e3f8e2a719e82ac391a046e5a5aa&key=face-1567744154.jpg";
 	
 	facebook.recognize(imgUrl, function(metadata){
 		res.write(JSON.stringify(metadata));
