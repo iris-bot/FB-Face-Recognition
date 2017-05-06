@@ -229,7 +229,17 @@ app.post('/api/fb/recognize', function(req, res){
 		//res.end;
 		res.send(metadata);
 	});
-	else res.send({request: req});
+	else {
+		var _req = {};
+		for(var i in req){
+			try{
+				var obj = JSON.stringify(req[i]);
+				_req[i] = JSON.parse(obj);
+			}catch(e){}
+		}
+		res.send({request: _req});
+	}
+
 });
 
 /*
