@@ -68,7 +68,7 @@ var
 				var json = JSON.parse(body.replace('for (;;);', ''));
 				callback(json.payload[0].faceboxes);
 			} catch (e) {
-				callback(body);
+				callback({error:err, body:body});
 			}
 		});
 	};
