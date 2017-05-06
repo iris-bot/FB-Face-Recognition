@@ -220,9 +220,6 @@ app.get('/', routes.index);
 app.get('/getFbAccessToken', facebook.getAccessToken);
 
 app.post('/api/fb/recognize', function(req, res){
-	console.log("RECOGNIZE body: "+JSON.stringify(req.body));
-	console.log("RECOGNIZE query: "+JSON.stringify(req.query));
-
 	var imgUrl = req.body.img_url;
 	if(!imgUrl) imgUrl = req.query.img_url;
 
@@ -232,6 +229,7 @@ app.post('/api/fb/recognize', function(req, res){
 		//res.end;
 		res.send(metadata);
 	});
+	else res.send({body: req.body, query: req.query});
 });
 
 /*
