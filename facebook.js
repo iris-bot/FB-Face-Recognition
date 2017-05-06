@@ -78,7 +78,7 @@ var
 					if (json.payload==null && _ct<5) getRecognitionMetadata(imgId, callback, _ct+1); 
 					else cleanImagePost(imgId, callback, json.payload[0].faceboxes);
 				} catch (e) {
-					callback(imgId, callback, json.payload);
+					cleanImagePost(imgId, callback, json.payload);
 				}
 			});
 		}, 1500);
