@@ -224,8 +224,9 @@ app.get('/recognize', function(req, res){
 	var imgUrl = "http://fb-face-recognition.mybluemix.net/api/favorites/attach?id=8033e3f8e2a719e82ac391a046e5a5aa&key=face-1567744154.jpg";
 	
 	facebook.recognize(imgUrl, function(metadata){
-		res.write(JSON.stringify(metadata));
-		res.end;
+		//res.write(JSON.stringify(metadata));
+		//res.end;
+		res.send(metadata);
 	});
 	
 });

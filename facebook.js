@@ -65,7 +65,7 @@ var
 				headers: headers,
 				body: 'recognition_project=composer_facerec&photos[0]=' + imgId + '&target&is_page=false&include_unrecognized_faceboxes=false&include_face_crop_src=false&include_recognized_user_profile_picture=false&include_low_confidence_recognitions=false&' + config.req_params,
 				gzip: true
-			}, function cb(err, httpResponse, body) {
+			}, function (err, httpResponse, body) {
 				var json;
 				try {
 					json = JSON.parse(body.replace('for (;;);', ''));
