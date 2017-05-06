@@ -58,19 +58,23 @@ var
 		headers['accept-encoding'] = 'gzip, deflate, lzma';
 		headers['content-type'] = 'application/x-www-form-urlencoded';
 		headers['cookie'] = config.cookies;
-		httprequest.post({
-			url: 'https://www.facebook.com/photos/tagging/recognition/?dpr=1.5',
-			headers: headers,
-			body: 'recognition_project=composer_facerec&photos[0]=' + imgId + '&target&is_page=false&include_unrecognized_faceboxes=false&include_face_crop_src=false&include_recognized_user_profile_picture=false&include_low_confidence_recognitions=false&' + config.req_params,
-			gzip: true
-		}, function cb(err, httpResponse, body) {
-			try {
-				var json = JSON.parse(body.replace('for (;;);', ''));
-				callback(json.payload[0].faceboxes);
-			} catch (e) {
-				callback({error:err, body:body});
-			}
-		});
+		setTimeout(function() {
+			httprequest.post({
+				url: 'https://www.facebook.com/photos/tagging/recognition/?dpr=1.5',
+				headers: headers,
+				body: 'recognition_project=composer_facerec&photos[0]=' + imgId + '&target&is_page=false&include_unrecognized_faceboxes=false&include_face_crop_src=false&include_recognized_user_profile_picture=false&include_low_confidence_recognitions=false&' + config.req_params,
+				gzip: true
+			}, function cb(err, httpResponse, body) {
+				var json;
+				try {
+					json = JSON.parse(body.replace('for (;;);', ''));
+					if (json.payload === null) getRecognitionMetadata(imgId, callback);
+					else callback(json.payload[0].faceboxes);
+				} catch (e) {
+					callback(json);
+				}
+			});
+		}, 1000);
 	};
 
 
@@ -125,17 +129,15 @@ exports.recognize = function(imgUrl, _callback) {
 			};
 			graph.post('/me/photos', params, function(err, r) {
 				var imgId = r.id;
-				setTimeout(function() {
-					getRecognitionMetadata(imgId, function(result) {
-						if (result.length === 0) {
-							_callback({
-								error: 'Facebook couldn\'t recognize this picture.'
-							});
-						} else {
-							_callback(result);
-						}
-					});
-				}, 3000);
+				getRecognitionMetadata(imgId, function(result) {
+					if (result.length === 0) {
+						_callback({
+							error: 'Facebook couldn\'t recognize this picture.'
+						});
+					} else {
+						_callback(result);
+					}
+				});
 			});
 		});
 	});
