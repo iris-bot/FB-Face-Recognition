@@ -219,17 +219,14 @@ app.get('/', routes.index);
 
 app.get('/getFbAccessToken', facebook.getAccessToken);
 
-app.post('/recognize', function(req, res){
-	
-	var imgUrl = req.body.imgUrl;
+app.post('/api/fb/recognize', function(req, res){
+	var imgUrl = req.body.img_url;
 	console.log("RECOGNIZE: "+imgUrl);
-	
 	facebook.recognize(imgUrl, function(metadata){
 		//res.write(JSON.stringify(metadata));
 		//res.end;
 		res.send(metadata);
 	});
-	
 });
 
 /*
