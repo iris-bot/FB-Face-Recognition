@@ -179,7 +179,7 @@ function createResponseData(id, name, value, attachments) {
             key: item.key,
             url: '/api/faces/attach?id=' + id + '&key=' + item.key
         };
-        facebook.recognize(config['base-url']+attachmentData.url, function(medatdata){
+        facebook.recognize(config['base-url']+attachmentData.url, function(metadata){
         	attachmentData.fb = metadata;
         });
         setTimeout(function(){
