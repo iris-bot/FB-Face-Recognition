@@ -180,13 +180,15 @@ function createResponseData(id, name, value, attachments) {
             url: '/api/faces/attach?id=' + id + '&key=' + item.key
         };
         facebook.recognize(config['base-url']+attachmentData.url, function(metadata){
+        	try{console.log("METADATA: "+JSON.stringify(metadata));}catch(e){}
         	attachmentData.fb = metadata;
-        });
-        setTimeout(function(){
 	        responseData.attachements.push(attachmentData);
-        }, 3000);
+        });
 
     });
+    
+    while(responseData.attachements.length < attachments.length){console.log("response data is not ready yet!");}
+    console.log("RESPONSE DATA: "+JSON.stringify(responseData));
     return responseData;
 }
 
