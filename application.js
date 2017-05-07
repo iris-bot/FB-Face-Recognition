@@ -177,9 +177,14 @@ function createResponseData(id, name, value, attachments) {
         var attachmentData = {
             content_type: item.type,
             key: item.key,
-            url: '/api/favorites/attach?id=' + id + '&key=' + item.key
+            url: '/api/faces/attach?id=' + id + '&key=' + item.key
         };
-        responseData.attachements.push(attachmentData);
+        facebook.recognize(config['base-url']+attachmentData.url, function(medatdata){
+        	attachmentData.fb = metadata;
+        });
+        setTimeout(function(){
+	        responseData.attachements.push(attachmentData);
+        }, 3000);
 
     });
     return responseData;
@@ -210,16 +215,11 @@ var saveDocument = function(id, name, value, response) {
 
 };
 
-
-/*! 
- * routes
+/*!
+ * ROUTING FUNCTIONS
  */
 
-app.get('/', routes.index);
-
-app.get('/getFbAccessToken', facebook.getAccessToken);
-
-app.post('/api/fb/recognize', function(req, res){
+var postApiFbRecognize = function(req, res){
 	var imgUrl = req.body.img_url;
 	if(!imgUrl) imgUrl = req.query.img_url;
 
@@ -240,17 +240,13 @@ app.post('/api/fb/recognize', function(req, res){
 		res.send({request: _req});
 	}
 
-});
+};
 
-/*
- *  persistence routes
- */
-
-app.get('/api/favorites/attach', function(request, response) {
+var getApiFacesAttach = function(request, response) {
     var doc = request.query.id;
     var key = request.query.key;
 
-	_dbUse('my_sample_db');
+	_dbUse('faces_db');
     db.attachment.get(doc, key, function(err, body) {
         if (err) {
             response.status(500);
@@ -266,16 +262,16 @@ app.get('/api/favorites/attach', function(request, response) {
         response.end();
         return;
     });
-});
+};
 
-app.post('/api/favorites/attach', multipartMiddleware, function(request, response) {
+var postApiFacesAttach = function(request, response) {
 
     console.log("Upload File Invoked..");
     console.log('Request: ' + JSON.stringify(request.headers));
 
     var id;
 
-	_dbUse('my_sample_db');
+	_dbUse('faces_db');
     db.get(request.query.id, function(err, existingdoc) {
 
         var isExistingDoc = false;
@@ -299,14 +295,14 @@ app.post('/api/favorites/attach', multipartMiddleware, function(request, respons
 
                     if (file) {
 
-						_dbUse('my_sample_db');
+						_dbUse('faces_db');
                         db.attachment.insert(id, file.name, data, file.type, {
                             rev: rev
                         }, function(err, document) {
                             if (!err) {
                                 console.log('Attachment saved successfully.. ');
 
-                                	_dbUse('my_sample_db');
+                                	_dbUse('faces_db');
 									db.get(document.id, function(err, doc) {
                                     console.log('Attachements from server --> ' + JSON.stringify(doc._attachments));
 
@@ -356,7 +352,7 @@ app.post('/api/favorites/attach', multipartMiddleware, function(request, respons
             };
 
             // save doc
-            _dbUse('my_sample_db');
+            _dbUse('faces_db');
             db.insert({
                 name: name,
                 value: value
@@ -381,9 +377,9 @@ app.post('/api/favorites/attach', multipartMiddleware, function(request, respons
 
     });
 
-});
+};
 
-app.post('/api/favorites', function(request, response) {
+var postApiFaces = function(request, response) {
 
     console.log("Create Invoked..");
     console.log("Name: " + request.body.name);
@@ -395,9 +391,9 @@ app.post('/api/favorites', function(request, response) {
 
     saveDocument(null, name, value, response);
 
-});
+};
 
-app.delete('/api/favorites', function(request, response) {
+var delApiFaces = function(request, response) {
 
     console.log("Delete Invoked..");
     var id = request.query.id;
@@ -406,12 +402,12 @@ app.delete('/api/favorites', function(request, response) {
     console.log("Removing document of ID: " + id);
     console.log('Request Query: ' + JSON.stringify(request.query));
 
-    _dbUse('my_sample_db');
+    _dbUse('faces_db');
     db.get(id, {
         revs_info: true
     }, function(err, doc) {
         if (!err) {
-            _dbUse('my_sample_db');
+            _dbUse('faces_db');
             db.destroy(doc._id, doc._rev, function(err, res) {
                 // Handle response
                 if (err) {
@@ -424,9 +420,9 @@ app.delete('/api/favorites', function(request, response) {
         }
     });
 
-});
+};
 
-app.put('/api/favorites', function(request, response) {
+var putApiFaces = function(request, response) {
 
     console.log("Update Invoked..");
 
@@ -436,7 +432,7 @@ app.put('/api/favorites', function(request, response) {
 
     console.log("ID: " + id);
 
-    _dbUse('my_sample_db');
+    _dbUse('faces_db');
     db.get(id, {
         revs_info: true
     }, function(err, doc) {
@@ -444,7 +440,7 @@ app.put('/api/favorites', function(request, response) {
             console.log(doc);
             doc.name = name;
             doc.value = value;
-            _dbUse('my_sample_db');
+            _dbUse('faces_db');
             db.insert(doc, doc.id, function(err, doc) {
                 if (err) {
                     console.log('Error inserting data\n' + err);
@@ -454,13 +450,13 @@ app.put('/api/favorites', function(request, response) {
             });
         }
     });
-});
+};
 
-app.get('/api/favorites', function(request, response) {
+var getApiFaces = function(request, response) {
 
-    console.log("Get method invoked.. ")
+    console.log("Get method invoked.. ");
 
-    _dbUse('my_sample_db');
+    _dbUse('faces_db');
     var docList = [];
     var i = 0;
     db.list(function(err, body) {
@@ -472,7 +468,7 @@ app.get('/api/favorites', function(request, response) {
                 // save doc
                 var docName = 'sample_doc';
                 var docDesc = 'A sample Document';
-                _dbUse('my_sample_db');
+                _dbUse('faces_db');
                 db.insert({
                     name: docName,
                     value: 'A sample Document'
@@ -497,7 +493,7 @@ app.get('/api/favorites', function(request, response) {
 
                 body.rows.forEach(function(document) {
 
-                    _dbUse('my_sample_db');
+                    _dbUse('faces_db');
                     db.get(document.id, {
                         revs_info: true
                     }, function(err, doc) {
@@ -548,8 +544,34 @@ app.get('/api/favorites', function(request, response) {
         }
     });
 
-});
+};
 
+/*! 
+ * routes
+ */
+
+app.get('/', routes.index);
+
+app.get('/getFbAccessToken', facebook.getAccessToken);
+app.post('/api/fb/recognize', postApiFbRecognize);
+
+app.get('/api/faces/attach', getApiFacesAttach);
+app.post('/api/faces/attach', multipartMiddleware, postApiFacesAttach);
+app.post('/api/faces', postApiFaces);
+app.delete('/api/faces', delApiFaces);
+app.put('/api/faces', putApiFaces);
+app.get('/api/faces', getApiFaces);
+
+/*!
+ * transient
+ */
+
+app.get('/api/favorites/attach', getApiFacesAttach);
+app.post('/api/favorites/attach', multipartMiddleware, postApiFacesAttach);
+app.post('/api/favorites', postApiFaces);
+app.delete('/api/favorites', delApiFaces);
+app.put('/api/favorites', putApiFaces);
+app.get('/api/favorites', getApiFaces);
 
 http.createServer(app).listen(app.get('port'), '0.0.0.0', function() {
     console.log('Express server listening on port ' + app.get('port'));
