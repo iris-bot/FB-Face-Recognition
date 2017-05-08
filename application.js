@@ -179,16 +179,9 @@ function createResponseData(id, name, value, attachments) {
             key: item.key,
             url: '/api/faces/attach?id=' + id + '&key=' + item.key
         };
-        facebook.recognize(config['base-url']+attachmentData.url, function(metadata){
-        	try{console.log("METADATA: "+JSON.stringify(metadata));}catch(e){}
-        	attachmentData.fb = metadata;
-	        responseData.attachements.push(attachmentData);
-        });
-
+        responseData.attachements.push(attachmentData);
     });
     
-    while(responseData.attachements.length < attachments.length){console.log("response data is not ready yet!");}
-    console.log("RESPONSE DATA: "+JSON.stringify(responseData));
     return responseData;
 }
 
@@ -332,10 +325,22 @@ var postApiFacesAttach = function(request, response) {
                                         name,
                                         value,
                                         attachements);
-                                    console.log('Response after attachment: \n' + JSON.stringify(responseData));
-                                    response.write(JSON.stringify(responseData));
-                                    response.end();
-                                    return;
+                                        
+                                        
+                                    responseData.attachments.forEach(function(item, index) {
+								        facebook.recognize(config['base-url']+item.url, function(metadata){
+								        	var jstr = "null";
+								        	try{jstr = JSON.stringify(metadata);}catch(e){}
+								        	console.log("METADATA: "+jstr);
+								        	item.fb = metadata;
+								        	if(index==(responseData.attachements.length-1)){
+			                                    console.log('Response after attachment: \n' + JSON.stringify(responseData));
+			                                    response.write(JSON.stringify(responseData));
+			                                    response.end();
+			                                    return;
+								        	}
+								        });
+								    });
                                 });
                             } else {
                                 console.log(err);
