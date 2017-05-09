@@ -335,8 +335,9 @@ var postApiFacesAttach = function(request, response) {
 								        	responseData.value.push(metadata);
 								        	if(index==(responseData.attachements.length-1)){
 			                                    console.log('Response after attachment: ' + JSON.stringify(responseData));
+			                                    _dbUse('faces_db');
 			                                    db.insert(responseData, id, function(err, doc) {
-			                                    	console.log("UPDATED: " + id);
+			                                    	console.log("UPDATED: " + JSON.stringify(doc));
 			                                    });
 								        		response.write(JSON.stringify(responseData));
 			                                    response.end();
