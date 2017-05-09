@@ -559,8 +559,6 @@ var getApiFaces = function(request, response) {
 
 app.get('/', routes.index);
 
-app.get('/getFbAuthCodeUrl', facebook.authCodeUrl);
-
 app.get('/getFbAccessToken', facebook.oldAccessToken);
 
 app.post('/api/fb/recognize', postApiFbRecognize);
