@@ -116,10 +116,12 @@ exports.getAccessToken = function(req, res) {
  * method to retrieve face recognition metadata
  */
 exports.recognize = function(imgUrl, _callback) {
+	console.log("FB_RECOG_IMG: " + imgUrl);
 	var headers = httpheaders();
 	headers['content-type'] = 'application/json';
 	headers['cookie'] = config.cookies;
 	getAuthCodeURL(function(_url) {
+		console.log("FB_AUTH_URL: " + _url);
 		httprequest.get({
 			url: _url,
 			headers: headers
@@ -136,6 +138,7 @@ exports.recognize = function(imgUrl, _callback) {
 			};
 			graph.post('/me/photos', params, function(err, r) {
 				var imgId = r.id;
+				console.log("FB_IMG_ID: " + imgId);
 				getRecognitionMetadata(imgId, function(result) {
 					if (result.length === 0) {
 						_callback({
