@@ -112,7 +112,7 @@ function setRowContent(item, row) {
 
     var valueTextArea = "<textarea id='valText' onkeydown='onKey(event)' placeholder=\"Enter a description...\"></textarea>";
     if (item.value) {
-        valueTextArea = "<textarea id='valText' onkeydown='onKey(event)'>" + item.value + "</textarea>";
+        valueTextArea = "<textarea id='valText' onkeydown='onKey(event)'>" + JSON.stringify(item.value) + "</textarea>";
     }
 
     innerHTML += valueTextArea;
