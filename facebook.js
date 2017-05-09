@@ -13,7 +13,7 @@ var
 			'x_fb_background_state': 1,
 			'origin': 'https://www.facebook.com',
 			'accept-language': 'en-US,en;q=0.8',
-			'user-agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:53.0) Gecko/20100101 Firefox/53.0',
+			'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:33.0) Gecko/20100101 Firefox/33.0',
 			'accept': '*/*',
 			'referer': 'https://www.facebook.com/'
 		};
