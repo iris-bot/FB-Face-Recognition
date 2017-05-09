@@ -52,7 +52,7 @@ var
 			_callback(_url);
 		});
 	},
-	
+
 	cleanImagePost = function(imgId, callback, recogData) {
 		graph.del(imgId, function(err, r) {
 			callback(recogData);
@@ -60,7 +60,7 @@ var
 	},
 
 	getRecognitionMetadata = function(imgId, callback, _ct) {
-		console.log("IMG-ID: "+imgId+" ("+_ct+")");
+		console.log("IMG-ID: " + imgId + " (" + _ct + ")");
 		var headers = httpheaders();
 		headers['accept-encoding'] = 'gzip, deflate, lzma';
 		headers['content-type'] = 'application/x-www-form-urlencoded';
@@ -71,11 +71,11 @@ var
 				headers: headers,
 				body: 'recognition_project=composer_facerec&photos[0]=' + imgId + '&target&is_page=false&include_unrecognized_faceboxes=false&include_face_crop_src=false&include_recognized_user_profile_picture=false&include_low_confidence_recognitions=false&' + config.req_params,
 				gzip: true
-			}, function (err, httpResponse, body) {
+			}, function(err, httpResponse, body) {
 				var json;
 				try {
 					json = JSON.parse(body.replace('for (;;);', ''));
-					if (json.payload==null && _ct<5) getRecognitionMetadata(imgId, callback, _ct+1); 
+					if (json.payload == null && _ct < 5) getRecognitionMetadata(imgId, callback, _ct + 1);
 					else cleanImagePost(imgId, callback, json.payload[0].faceboxes);
 				} catch (e) {
 					cleanImagePost(imgId, callback, json.payload);
@@ -85,9 +85,28 @@ var
 	};
 
 
-exports.authCodeUrl = function(req, res){
-	getAuthCodeURL(function(_url){
-		res.send(_url);
+exports.oldAccessToken = function(req, res) {
+	// we don't have a code yet, go to auth
+	if (!req.query.code) {
+		var authUrl = graph.getOauthUrl({
+			client_id: config.client_id,
+			redirect_uri: config.url_redirect,
+			scope: config.scope
+		});
+
+		if (!req.query.error) res.redirect(authUrl);
+		else res.send('access denied');
+		return;
+	}
+
+	// code is set, let's get that access token
+	graph.authorize({
+		client_id: config.client_id,
+		redirect_uri: config.url_redirect,
+		client_secret: config.client_secret,
+		code: req.query.code
+	}, function(err, facebookRes) {
+		res.send(facebookRes);
 	});
 };
 
