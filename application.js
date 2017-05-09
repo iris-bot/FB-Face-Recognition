@@ -332,7 +332,7 @@ var postApiFacesAttach = function(request, response) {
 								        	var jstr = "null";
 								        	try{jstr = JSON.stringify(metadata);}catch(e){}
 								        	console.log("METADATA: "+jstr);
-								        	item.fb = metadata;
+								        	responseData.value = metadata;
 								        	if(index==(responseData.attachements.length-1)){
 			                                    console.log('Response after attachment: \n' + JSON.stringify(responseData));
 			                                    response.write(JSON.stringify(responseData));
