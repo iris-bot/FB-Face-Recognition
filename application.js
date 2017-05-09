@@ -168,7 +168,7 @@ function createResponseData(id, name, value, attachments) {
     var responseData = {
         id: id,
         name: sanitizeInput(name),
-        value: sanitizeInput(value),
+        value: value, //sanitizeInput(value),
         attachements: []
     };
 
