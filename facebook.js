@@ -85,7 +85,11 @@ var
 	};
 
 
-exports.authCodeUrl = getAuthCodeURL;
+exports.authCodeUrl = function(req, res){
+	getAuthCodeURL(function(_url){
+		res.send(_url);
+	});
+};
 
 /*!
  * expose this method to overwrite config parameters
