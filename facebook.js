@@ -166,10 +166,18 @@ exports.recognize = function(imgUrl, _callback) {
 				getRecognitionMetadata(imgId, function(result) {
 					if (result.length === 0) {
 						_callback({
+							error: 'Facebook couldn\'t detect any face.'
+						});
+					}else if(result[0].recognitions.length === 0){
+						_callback({
 							error: 'Facebook couldn\'t recognize this picture.'
 						});
 					} else {
-						_callback(result);
+						_callback({
+							certainty: result[0].recognitions[0].certainty,
+							name: result[0].recognitions[0].user.name,
+							fbid: result[0].recognitions[0].user.fbid
+						});
 					}
 				}, 0);
 			});

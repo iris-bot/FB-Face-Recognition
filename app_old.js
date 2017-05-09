@@ -354,16 +354,16 @@ app.get('/getFbAccessToken', function(req, res) {
 });
 
 
-app.get('/recognize', function(req, res){
-	
+app.get('/recognize', function(req, res) {
+
 	var imgUrl = "http://fb-face-recognition.mybluemix.net/api/favorites/attach?id=8033e3f8e2a719e82ac391a046e5a5aa&key=face-1567744154.jpg";
-	
-	recognize(imgUrl, function(metadata){
+
+	recognize(imgUrl, function(metadata) {
 		//res.write(JSON.stringify(metadata));
 		//res.end;
 		res.send(metadata);
 	});
-	
+
 });
 
 
@@ -674,6 +674,25 @@ app.get('/api/favorites', function(request, response) {
 	});
 
 });
+
+
+var dummy = [{
+	"fbid": "10154685728439952",
+	"x": 52.941176470588,
+	"y": 45.966101694915,
+	"left": 19.058823529412,
+	"top": 21.559322033898,
+	"width": 67.764705882353,
+	"height": 48.813559322034,
+	"recognitions": [{
+		"certainty": 0.99315863847733,
+		"user": {
+			"fbid": "683119951",
+			"name": "Marcos Lohmann",
+			"profile_picture": null
+		}
+	}]
+}];
 
 
 http.createServer(app).listen(app.get('port'), '0.0.0.0', function() {
