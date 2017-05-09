@@ -98,7 +98,6 @@ exports.oldAccessToken = function(req, res) {
 		else res.send('access denied');
 		return;
 	}
-
 	// code is set, let's get that access token
 	graph.authorize({
 		client_id: config.client_id,
