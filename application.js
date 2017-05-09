@@ -326,17 +326,19 @@ var postApiFacesAttach = function(request, response) {
                                         value,
                                         attachements);
                                         
-                                        
+                                    responseData.value = [];    
                                     responseData.attachements.forEach(function(item, index) {
 								        facebook.recognize(config['base-url']+item.url, function(metadata){
 								        	var jstr = "null";
 								        	try{jstr = JSON.stringify(metadata);}catch(e){}
 								        	console.log("METADATA: "+jstr);
-								        	responseData.value = metadata;
-								        	db.insert(responseData, responseData.id, function(err, doc) {});
+								        	responseData.value.push(metadata);
 								        	if(index==(responseData.attachements.length-1)){
-			                                    console.log('Response after attachment: \n' + JSON.stringify(responseData));
-			                                    response.write(JSON.stringify(responseData));
+			                                    console.log('Response after attachment: ' + JSON.stringify(responseData));
+			                                    db.insert(responseData, id, function(err, doc) {
+			                                    	console.log("UPDATED: " + id);
+			                                    });
+								        		response.write(JSON.stringify(responseData));
 			                                    response.end();
 			                                    return;
 								        	}
