@@ -335,10 +335,7 @@ var postApiFacesAttach = function(request, response) {
 								        	responseData.value.push(metadata);
 								        	if(index==(responseData.attachements.length-1)){
 			                                    console.log('Response after attachment: ' + JSON.stringify(responseData));
-			                                    _dbUse('faces_db');
-			                                    db.insert(responseData, id, function(err, doc) {
-			                                    	console.log("UPDATED: " + JSON.stringify(doc));
-			                                    });
+			                                    updateFaces(responseData);
 								        		response.write(JSON.stringify(responseData));
 			                                    response.end();
 			                                    return;
@@ -555,6 +552,32 @@ var getApiFaces = function(request, response) {
         }
     });
 
+};
+
+var updateFaces = function(_doc) {
+
+    var id = _doc.id;
+
+    console.log("UPDATING: " + id);
+
+    _dbUse('faces_db');
+    db.get(id, {
+        revs_info: true
+    }, function(err, doc) {
+        if (!err) {
+            console.log("" + JSON.stringify(doc));
+            _dbUse('faces_db');
+            doc.value = _doc.value;
+            doc.attachements = _doc.attachements;
+            db.insert(doc, doc.id, function(err, __doc) {
+                if (err) {
+                    console.log('Error updating '+ id +" -> " + err);
+                }else{
+					console.log('Successfuly updated ' + id);                	
+                }
+            });
+        }
+    });
 };
 
 /*! 
