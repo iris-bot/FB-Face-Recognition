@@ -85,6 +85,8 @@ var
 	};
 
 
+exports.authCodeUrl = getAuthCodeURL;
+
 /*!
  * expose this method to overwrite config parameters
  */
