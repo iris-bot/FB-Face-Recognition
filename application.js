@@ -327,7 +327,7 @@ var postApiFacesAttach = function(request, response) {
                                         attachements);
                                         
                                         
-                                    responseData.attachments.forEach(function(item, index) {
+                                    responseData.attachements.forEach(function(item, index) {
 								        facebook.recognize(config['base-url']+item.url, function(metadata){
 								        	var jstr = "null";
 								        	try{jstr = JSON.stringify(metadata);}catch(e){}
