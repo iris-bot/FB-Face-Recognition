@@ -569,7 +569,7 @@ var updateFaces = function(idx, _doc) {
             _dbUse('faces_db');
             
             if(_doc.value[idx].error && idx==0){
-            	console.log("FB_RECOG_ERR: "+_doc.value.error);
+            	console.log("FB_RECOG_ERR: "+_doc.value[idx].error);
 	            db.destroy(doc._id, doc._rev, function(err, res) {
 	                // Handle response
 	                if (err) {
