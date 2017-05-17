@@ -75,13 +75,13 @@ var
 				var json;
 				try {
 					json = JSON.parse(body.replace('for (;;);', ''));
-					if (json.payload == null && _ct < 5) getRecognitionMetadata(imgId, callback, _ct + 1);
+					if (json.payload == null && _ct < 15) getRecognitionMetadata(imgId, callback, _ct + 1);
 					else cleanImagePost(imgId, callback, json.payload[0].faceboxes);
 				} catch (e) {
 					cleanImagePost(imgId, callback, json.payload);
 				}
 			});
-		}, 1500);
+		}, 500);
 	};
 
 

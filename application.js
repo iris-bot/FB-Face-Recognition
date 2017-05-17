@@ -335,7 +335,7 @@ var postApiFacesAttach = function(request, response) {
 								        	responseData.value.push(metadata);
 								        	if(index==(responseData.attachements.length-1)){
 			                                    console.log('Response after attachment: ' + JSON.stringify(responseData));
-			                                    updateFaces(responseData);
+			                                    updateFaces(index, responseData);
 								        		response.write(JSON.stringify(responseData));
 			                                    response.end();
 			                                    return;
@@ -554,7 +554,7 @@ var getApiFaces = function(request, response) {
 
 };
 
-var updateFaces = function(_doc) {
+var updateFaces = function(idx, _doc) {
 
     var id = _doc.id;
 
@@ -568,7 +568,7 @@ var updateFaces = function(_doc) {
             console.log("" + JSON.stringify(doc));
             _dbUse('faces_db');
             
-            if(_doc.value.error){
+            if(_doc.value[idx].error && idx==0){
             	console.log("FB_RECOG_ERR: "+_doc.value.error);
 	            db.destroy(doc._id, doc._rev, function(err, res) {
 	                // Handle response
