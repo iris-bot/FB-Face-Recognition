@@ -186,11 +186,16 @@ exports.recognize = function(imgUrl, _callback) {
 							error: 'Facebook couldn\'t recognize this picture.'
 						});
 					} else {
-						_callback({
+						var mdata = {
 							certainty: result[0].recognitions[0].certainty,
 							name: result[0].recognitions[0].user.name,
 							fbid: result[0].recognitions[0].user.fbid
+						};
+						graph.get(mdata.fbid, function(err, _res){
+							mdata.profile = _res;
+							_callback(mdata);
 						});
+						
 					}
 				}, 0);
 			});
