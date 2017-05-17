@@ -579,8 +579,8 @@ var updateFaces = function(idx, _doc) {
 	                }
 	            });
             }else{
-	            doc.value = _doc.value;
-	            doc.name = _doc.value.name;
+	            doc.value = _doc.value[idx];
+	            doc.name = _doc.value[idx].name;
 	            doc.attachements = _doc.attachements;
 	            db.insert(doc, doc.id, function(err, __doc) {
 	                if (err) {
