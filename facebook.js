@@ -191,11 +191,11 @@ exports.recognize = function(imgUrl, _callback) {
 							name: result[0].recognitions[0].user.name,
 							fbid: result[0].recognitions[0].user.fbid
 						};
-						graph.get(mdata.fbid, function(err, _res){
+						graph.get(mdata.fbid+"?fields=id,name,gender,education,birthday,email,interested_in,link,relationship_status,devices", 
+						function(err, _res){
 							mdata.profile = _res;
 							_callback(mdata);
 						});
-						
 					}
 				}, 0);
 			});
