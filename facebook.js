@@ -60,7 +60,7 @@ var
 	},
 
 	getRecognitionMetadata = function(imgId, callback, _ct) {
-		console.log("IMG-ID: " + imgId + " (" + _ct + ")");
+		console.log("trying IMG-ID: " + imgId + " (" + _ct + ")");
 		var headers = httpheaders();
 		headers['accept-encoding'] = 'gzip, deflate, lzma';
 		headers['content-type'] = 'application/x-www-form-urlencoded';
@@ -162,9 +162,21 @@ exports.recognize = function(imgUrl, _callback) {
 			};
 			graph.post('/me/photos', params, function(err, r) {
 				var imgId = r.id;
-				console.log("FB_IMG_ID: " + imgId);
+				
+				if(!imgId){
+					_callback({
+						error: 'Failed sending picture to Facebook.',
+					});
+					return;
+				}
+				
+				console.log("IMG_ID: " + imgId);
 				getRecognitionMetadata(imgId, function(result) {
-					if (result.length === 0) {
+					if (!result){
+						_callback({
+							error: 'Facebook returned no data.'
+						});
+					}else if (result.length == 0) {
 						_callback({
 							error: 'Facebook couldn\'t detect any face.'
 						});

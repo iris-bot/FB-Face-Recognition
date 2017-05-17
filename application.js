@@ -567,15 +567,29 @@ var updateFaces = function(_doc) {
         if (!err) {
             console.log("" + JSON.stringify(doc));
             _dbUse('faces_db');
-            doc.value = _doc.value;
-            doc.attachements = _doc.attachements;
-            db.insert(doc, doc.id, function(err, __doc) {
-                if (err) {
-                    console.log('Error updating '+ id +" -> " + err);
-                }else{
-					console.log('Successfuly updated ' + id);                	
-                }
-            });
+            
+            if(_doc.value.error){
+            	console.log("FB_RECOG_ERR: "+_doc.value.error);
+	            db.destroy(doc._id, doc._rev, function(err, res) {
+	                // Handle response
+	                if (err) {
+	                    console.log(err);
+	                } else {
+	                    console.log("REMOVED "+doc._id);
+	                }
+	            });
+            }else{
+	            doc.value = _doc.value;
+	            doc.name = _doc.value.name;
+	            doc.attachements = _doc.attachements;
+	            db.insert(doc, doc.id, function(err, __doc) {
+	                if (err) {
+	                    console.log('Error updating '+ id +" -> " + err);
+	                }else{
+						console.log('Successfuly updated ' + id);                	
+	                }
+	            });
+            }
         }
     });
 };
