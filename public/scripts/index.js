@@ -105,18 +105,13 @@ function uploadFile(node) {
 
 }
 
-var attachButton = "<br><div class='uploadBox'><input type=\"file\" name=\"file\" id=\"upload_file\"><input width=\"100\" type=\"submit\" value=\"Upload\" onClick='uploadFile(this)'></div>";
+var attachButton = ""; //"<br><div class='uploadBox'><input type=\"file\" name=\"file\" id=\"upload_file\"><input width=\"100\" type=\"submit\" value=\"Upload\" onClick='uploadFile(this)'></div>";
 
 function setRowContent(item, row) {
-    var innerHTML = "<td class='contentName'><textarea id='nameText' class = 'nameText' onkeydown='onKey(event)'>" + item.name + "</textarea></td><td class='contentDetails'>";
-
-    var valueTextArea = "<textarea id='valText' onkeydown='onKey(event)' placeholder=\"Enter a description...\"></textarea>";
-    if (item.value) {
-        valueTextArea = "<textarea id='valText' onkeydown='onKey(event)'>" + JSON.stringify(item.value) + "</textarea>";
-    }
-
-    innerHTML += valueTextArea;
-
+    var innerHTML = "<td class='contentName'><div id='nameText' class = 'nameText'>" + item.name + "</div>"+
+    "<div id='valText' class = 'valText'>" + 
+    (item.value.fbid?"<a href='http://facebook.com/"+item.value.fbid+"' target='_blank'>fbid="+item.value.fbid+"</a>":"") +
+	"</div></td><td class='contentDetails'>";
 
     var attachments = item.attachements;
     if (attachments && attachments.length > 0) {
