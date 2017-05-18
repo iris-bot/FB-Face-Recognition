@@ -21,6 +21,7 @@ var express = require('express'),
  */
 
 var app = express();
+var db;
 var vr;
 var cloudant;
 var config = {};
@@ -75,7 +76,7 @@ function initDBConnection() {
 
 var _dbUse = function(dbName) {
    cloudant.db.create(dbName, function(err, res) {});
-   var db = cloudant.use(dbName);
+   db = cloudant.use(dbName);
    if (db == null) {
       console.warn('Could not find Cloudant credentials in VCAP_SERVICES environment variable - data will be unavailable to the UI');
    }
@@ -119,7 +120,6 @@ var _dbPut = function(docType, data, func) {
 
 initDBConnection();
 
-var facesDB = _dbUse('faces_db');
 
 /*!
  * configurations
@@ -201,6 +201,27 @@ function sanitizeInput(str) {
     return String(str).replace(/&(?!amp;|lt;|gt;)/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+var saveDocument = function(id, name, value, response) {
+
+    if (id === undefined) {
+        // Generated random id
+        id = '';
+    }
+
+    db.insert({
+        name: name,
+        value: value
+    }, id, function(err, doc) {
+        if (err) {
+            console.log(err);
+            response.sendStatus(500);
+        } else
+            response.sendStatus(200);
+        response.end();
+    });
+
+};
+
 /*!
  * ROUTING FUNCTIONS
  */
@@ -232,7 +253,8 @@ var getApiFacesAttach = function(request, response) {
     var doc = request.query.id;
     var key = request.query.key;
 
-	facesDB.attachment.get(doc, key, function(err, body) {
+	_dbUse('faces_db');
+    db.attachment.get(doc, key, function(err, body) {
         if (err) {
             response.status(500);
             response.setHeader('Content-Type', 'text/plain');
@@ -256,7 +278,8 @@ var postApiFacesAttach = function(request, response) {
 
     var id;
 
-	facesDB.get(request.query.id, function(err, existingdoc) {
+	_dbUse('faces_db');
+    db.get(request.query.id, function(err, existingdoc) {
 
         var isExistingDoc = false;
         if (!existingdoc) {
@@ -279,13 +302,15 @@ var postApiFacesAttach = function(request, response) {
 
                     if (file) {
 
-                        facesDB.attachment.insert(id, file.name, data, file.type, {
+						_dbUse('faces_db');
+                        db.attachment.insert(id, file.name, data, file.type, {
                             rev: rev
                         }, function(err, document) {
                             if (!err) {
                                 console.log('Attachment saved successfully.. ');
 
-									facesDB.get(document.id, function(err, doc) {
+                                	_dbUse('faces_db');
+									db.get(document.id, function(err, doc) {
                                     console.log('Attachements from server --> ' + JSON.stringify(doc._attachments));
 
                                     var attachements = [];
@@ -347,7 +372,8 @@ var postApiFacesAttach = function(request, response) {
             };
 
             // save doc
-            facesDB.insert({
+            _dbUse('faces_db');
+            db.insert({
                 name: name,
                 value: value
             }, '', function(err, doc) {
@@ -373,6 +399,20 @@ var postApiFacesAttach = function(request, response) {
 
 };
 
+var postApiFaces = function(request, response) {
+
+    console.log("Create Invoked..");
+    console.log("Name: " + request.body.name);
+    console.log("Value: " + request.body.value);
+
+    // var id = request.body.id;
+    var name = sanitizeInput(request.body.name);
+    var value = sanitizeInput(request.body.value);
+
+    saveDocument(null, name, value, response);
+
+};
+
 var delApiFaces = function(request, response) {
 
     console.log("Delete Invoked..");
@@ -382,11 +422,13 @@ var delApiFaces = function(request, response) {
     console.log("Removing document of ID: " + id);
     console.log('Request Query: ' + JSON.stringify(request.query));
 
-    facesDB.get(id, {
+    _dbUse('faces_db');
+    db.get(id, {
         revs_info: true
     }, function(err, doc) {
         if (!err) {
-            facesDB.destroy(doc._id, doc._rev, function(err, res) {
+            _dbUse('faces_db');
+            db.destroy(doc._id, doc._rev, function(err, res) {
                 // Handle response
                 if (err) {
                     console.log(err);
@@ -400,13 +442,44 @@ var delApiFaces = function(request, response) {
 
 };
 
+var putApiFaces = function(request, response) {
+
+    console.log("Update Invoked..");
+
+    var id = request.body.id;
+    var name = sanitizeInput(request.body.name);
+    var value = sanitizeInput(request.body.value);
+
+    console.log("ID: " + id);
+
+    _dbUse('faces_db');
+    db.get(id, {
+        revs_info: true
+    }, function(err, doc) {
+        if (!err) {
+            console.log(doc);
+            doc.name = name;
+            doc.value = value;
+            _dbUse('faces_db');
+            db.insert(doc, doc.id, function(err, doc) {
+                if (err) {
+                    console.log('Error inserting data\n' + err);
+                    return 500;
+                }
+                return 200;
+            });
+        }
+    });
+};
+
 var getApiFaces = function(request, response) {
 
     console.log("Get method invoked.. ");
 
+    _dbUse('faces_db');
     var docList = [];
     var i = 0;
-    facesDB.list(function(err, body) {
+    db.list(function(err, body) {
         if (!err) {
             var len = body.rows.length;
             console.log('total # of docs -> ' + len);
@@ -415,7 +488,8 @@ var getApiFaces = function(request, response) {
                 // save doc
                 var docName = 'sample_doc';
                 var docDesc = 'A sample Document';
-                facesDB.insert({
+                _dbUse('faces_db');
+                db.insert({
                     name: docName,
                     value: 'A sample Document'
                 }, '', function(err, doc) {
@@ -439,7 +513,8 @@ var getApiFaces = function(request, response) {
 
                 body.rows.forEach(function(document) {
 
-                    facesDB.get(document.id, {
+                    _dbUse('faces_db');
+                    db.get(document.id, {
                         revs_info: true
                     }, function(err, doc) {
                         if (!err) {
@@ -497,16 +572,17 @@ var updateFaces = function(idx, _doc) {
 
     console.log("UPDATING: " + id);
 
-    facesDB.get(id, {
+    _dbUse('faces_db');
+    db.get(id, {
         revs_info: true
     }, function(err, doc) {
         if (!err) {
             console.log("" + JSON.stringify(doc));
+            _dbUse('faces_db');
             
             if(_doc.value[idx].error && idx==0){
-            	// NO FACEBOOK METADATA
             	console.log("FB_RECOG_ERR: "+_doc.value[idx].error);
-	            facesDB.destroy(doc._id, doc._rev, function(err, res) {
+	            db.destroy(doc._id, doc._rev, function(err, res) {
 	                // Handle response
 	                if (err) {
 	                    console.log(err);
@@ -515,42 +591,16 @@ var updateFaces = function(idx, _doc) {
 	                }
 	            });
             }else{
-            	
-            	facesDB.find({selector:{"value.fbid":_doc.value[idx].fbid}}, function(err,res){
-            		var _docs = res.docs;
-            		if(_docs.lenght>0){
-            			var xdoc = _docs[0];
-            			xdoc.value = _doc.value[idx];
-			            xdoc.name = _doc.value[idx].name;
-			            xdoc.attachements = xdoc.attachements.concat(_doc.attachements);
-			            facesDB.insert(xdoc, xdoc.id, function(err, __doc) {
-			                if (err) {
-			                    console.log('Error updating '+ xdoc.id +" -> " + err);
-			                }else{
-								console.log('Successfuly updated ' + xdoc.id);
-								facesDB.destroy(doc._id, doc._rev, function(err, res) {
-					                // Handle response
-					                if (err) {
-					                    console.log(err);
-					                } else {
-					                    console.log("REMOVED "+doc._id);
-					                }
-					            });
-				            }
-			            });
-            		}else{
-			            doc.value = _doc.value[idx];
-			            doc.name = _doc.value[idx].name;
-			            doc.attachements = _doc.attachements;
-			            facesDB.insert(doc, doc.id, function(err, __doc) {
-			                if (err) {
-			                    console.log('Error updating '+ id +" -> " + err);
-			                }else{
-								console.log('Successfuly updated ' + id);                	
-			                }
-			            });
-            		}
-            	});
+	            doc.value = _doc.value[idx];
+	            doc.name = _doc.value[idx].name;
+	            doc.attachements = _doc.attachements;
+	            db.insert(doc, doc.id, function(err, __doc) {
+	                if (err) {
+	                    console.log('Error updating '+ id +" -> " + err);
+	                }else{
+						console.log('Successfuly updated ' + id);                	
+	                }
+	            });
             }
         }
     });
@@ -563,12 +613,26 @@ var updateFaces = function(idx, _doc) {
 app.get('/', routes.index);
 
 app.get('/getFbAccessToken', facebook.oldAccessToken);
+
 app.post('/api/fb/recognize', postApiFbRecognize);
 
 app.get('/api/faces/attach', getApiFacesAttach);
 app.post('/api/faces/attach', multipartMiddleware, postApiFacesAttach);
+app.post('/api/faces', postApiFaces);
 app.delete('/api/faces', delApiFaces);
+app.put('/api/faces', putApiFaces);
 app.get('/api/faces', getApiFaces);
+
+/*!
+ * transient
+ */
+
+app.get('/api/favorites/attach', getApiFacesAttach);
+app.post('/api/favorites/attach', multipartMiddleware, postApiFacesAttach);
+app.post('/api/favorites', postApiFaces);
+app.delete('/api/favorites', delApiFaces);
+app.put('/api/favorites', putApiFaces);
+app.get('/api/favorites', getApiFaces);
 
 http.createServer(app).listen(app.get('port'), '0.0.0.0', function() {
     console.log('Express server listening on port ' + app.get('port'));
