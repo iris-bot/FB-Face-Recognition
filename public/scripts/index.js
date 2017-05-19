@@ -27,34 +27,24 @@ function loadItems() {
 
 function setRowContent(item, row) {
 	console.log(item);
-    var innerHTML = "<td class='contentName'><div id='nameText' class = 'nameText'>" + item.name + "</div>"+
-    "<div id='valText' class = 'valText'>" + 
-    (item.value.fbid?"<a href='http://facebook.com/"+item.value.fbid+"' target='_blank'>fbid="+item.value.fbid+"</a>":"") +
-	"</div></td><td class='contentDetails'>";
+    var innerHTML = "<td class='contentName'><div class = 'nameText'>" + item.name + "</div>"+
+    	"<div class = 'valText'>" + 
+    	(item.value.fbid?"<a href='http://facebook.com/"+item.value.fbid+"' target='_blank'>fbid="+perfil+"</a>":"") +
+		"</div>";
+	
+	for(var k in item.value){
+		innerHTML += "<div class = 'valText'>"+k+": "+item.value[k]+"</div>";
+	}
+	
+	innerHTML += "</td><td class='contentDetails'><div class='flexBox'>";
 
-    var attachments = item.attachements;
-    if (attachments && attachments.length > 0) {
-        innerHTML += "<div class='flexBox'>";
-        for (var i = 0; i < attachments.length; ++i) {
-            var attachment = attachments[i];
+	for(var i in item.attachements){
+		var attach = item.attachements[i];
+		var tooltip = item.trace[i].date + " | " + item.trace[i].latitude + " | " + item.trace[i].longitude;
+        innerHTML += "<div class='contentTiles'><img height=\"50\" src=\"" + encodeUriAndQuotes(attach.url) + "\" title='"+tooltip+"'></div>";
+	}
 
-            if (attachment.content_type.indexOf("image/") == 0) {
-                innerHTML += "<div class='contentTiles'>" + attachment.key + "<br><img height=\"150\" src=\"" + encodeUriAndQuotes(attachment.url) + "\" onclick='window.open(\"" + encodeUriAndQuotes(attachment.url) + "\")'></img></div>";
-
-            } else if (attachment.content_type.indexOf("audio/") == 0) {
-                innerHTML += "<div class='contentTiles'>" + attachment.key + "<br><AUDIO  height=\"50\" src=\"" + encodeUriAndQuotes(attachment.url) + "\" controls></AUDIO></div>";
-
-            } else if (attachment.content_type.indexOf("video/") == 0) {
-                innerHTML += "<div class='contentTiles'>" + attachment.key + "<br><VIDEO  height=\"150\" src=\"" + encodeUriAndQuotes(attachment.url) + "\" controls></VIDEO></div>";
-
-            } else if (attachment.content_type.indexOf("text/") == 0 || attachment.content_type.indexOf("application/") == 0) {
-                innerHTML += "<div class='contentTiles'><a href=\"" + encodeUriAndQuotes(attachment.url) + "\" target=\"_blank\">" + attachment.key + "</a></div>";
-            }
-
-        }
-        innerHTML += "</div>";
-
-    }
+    innerHTML += "</div>";
 
     row.innerHTML = innerHTML + "</td><td class = 'contentAction'><span class='deleteBtn' onclick='deleteItem(this)' title='delete me'></span></td>";
 
