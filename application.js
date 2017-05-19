@@ -473,7 +473,7 @@ var updateFaces = function(idx, _doc) {
 			            xdoc.attachements.push(_doc.attachements[idx]);
 			            var attachs = xdoc._attachments;
 			            for(var key in _doc.attachements){
-			            	attachs[key](_doc._attachments[key]);
+			            	attachs[key] = _doc._attachments[key];
 			            }
 			            xdoc = createResponseData(xdoc._id, xdoc.name, xdoc.value, xdoc.attachements);
 			            xdoc._attachments = attachs;
