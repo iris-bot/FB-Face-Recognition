@@ -518,8 +518,8 @@ var updateFaces = function(idx, _doc) {
             	console.log("LOKING FOR FBID: "+_doc.value[idx].fbid);
             	facesDB.find({selector:{"value.fbid":_doc.value[idx].fbid}}, function(err,res){
             		var _docs = res.docs;
-            		console.log("FOUND: "+_docs.lenght+" DOCS");
-            		if(_docs.lenght>0){
+            		console.log("FOUND: "+_docs.length+" DOCS");
+            		if(_docs.length>0){
             			var xdoc = _docs[0];
             			xdoc.value = _doc.value[idx];
 			            xdoc.name = _doc.value[idx].name;
