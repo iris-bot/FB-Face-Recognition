@@ -8,7 +8,7 @@ function encodeUriAndQuotes(untrustedStr) {
 
 function loadItems() {
     xhrGet(REST_DATA, function(data) {
-
+		console.log(data);
         //stop showing loading message
         stopLoadingMessage();
 
@@ -42,6 +42,7 @@ function loadItems() {
 }
 
 function setRowContent(item, row) {
+	console.log(item);
     var innerHTML = "<td class='contentName'><div id='nameText' class = 'nameText'>" + item.name + "</div>"+
     "<div id='valText' class = 'valText'>" + 
     (item.value.fbid?"<a href='http://facebook.com/"+item.value.fbid+"' target='_blank'>fbid="+item.value.fbid+"</a>":"") +
