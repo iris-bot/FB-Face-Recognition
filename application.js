@@ -390,10 +390,10 @@ var updateFaces = function(_doc, metadata) {
 			    		else{
     						xdoc.value = metadata;
     						xdoc.trace.push(_doc.trace[0]);
-				            facesDB.insert(xdoc, (xdoc._id || xdoc.id), function(err, d) {
+				            facesDB.insert(xdoc, (xdoc._id || xdoc.id), function(err, xdoc) {
 				                if (err) console.log('Error updating '+ (xdoc._id || xdoc.id) +" -> " + err);
 				                else{
-									console.log('Successfuly updated XDOC: ' + (d.id||d._id));
+									console.log('Successfuly updated XDOC: ' + (xdoc.id||xdoc._id));
 						            for(var key in _doc._attachments){
 						            	facesDB.attachment.get(_doc.id||_doc._id, key, {rev: (_doc._rev || _doc.rev)}, function(e, data){
 						            		if(e) console.log("ERROR GETTING ATTACH -> "+e);
