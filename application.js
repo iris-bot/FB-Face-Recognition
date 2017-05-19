@@ -175,12 +175,13 @@ configVR();
  * functions
  */
 
-function createResponseData(id, name, value, attachments) {
+function createResponseData(id, name, value, trace, attachments) {
 
     var responseData = {
         id: id,
         name: sanitizeInput(name),
-        value: value, //sanitizeInput(value),
+        value: value, 
+        trace: trace,
         attachements: []
     };
 
@@ -250,6 +251,9 @@ var getApiFacesAttach = function(request, response) {
 
 var postApiFacesAttach = function(request, response) {
 
+    response.status(200);
+    response.end();
+
     console.log("Upload File Invoked..");
     console.log('Request: ' + JSON.stringify(request.headers));
 
@@ -282,8 +286,6 @@ var postApiFacesAttach = function(request, response) {
 								        	var jstr = "null";
 								        	try{jstr = JSON.stringify(metadata);}catch(e){}
 								        	console.log("METADATA: "+jstr);
-							        		response.write(jstr);
-		                                    response.end();
 				                            updateFaces(_doc, metadata);
 		                                    return;
 								        });
@@ -297,8 +299,6 @@ var postApiFacesAttach = function(request, response) {
 	    });
 	}else{
 		console.log("NO FILE TO ATTACH");
-		response.write('{"error":"no file to attach"}');
-        response.end();
         return;
 	}
 
@@ -348,7 +348,7 @@ var getApiFaces = function(request, response) {
                         revs_info: true
                     }, function(err, doc) {
                         if (!err && doc.value) {
-                            docList.push(createResponseData(document.id || document._id, doc.name, doc.value, doc._attachments));
+                            docList.push(createResponseData(document.id || document._id, doc.name, doc.value, doc.trace, doc._attachments));
                             i++;
                             if (i >= len) {
                                 response.write(JSON.stringify(docList));
@@ -389,7 +389,7 @@ var updateFaces = function(_doc, metadata) {
 			    		if(err) console.log("ERROR FETCHING DOC "+(res.docs[0]._id || res.docs[0].id));
 			    		else{
 			    			xdoc.name = metadata.name;
-    						xdoc.value = metadata;
+    						for(var k in metadata) xdoc.value[k] = metadata[k];
     						xdoc.trace.push(_doc.trace[0]);
 				            facesDB.insert(xdoc, (xdoc._id || xdoc.id), function(err, xdoc) {
 				                if (err) console.log('Error updating '+ (xdoc._id || xdoc.id) +" -> " + err);

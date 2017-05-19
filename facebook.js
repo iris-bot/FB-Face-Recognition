@@ -185,15 +185,19 @@ exports.recognize = function(imgUrl, _callback) {
 						_callback({
 							error: 'Facebook couldn\'t recognize this picture.'
 						});
-					} else {
+					}else if(result[0].recognitions[0].certainty < 0.85){
+						_callback({
+							error: 'Facebook recognition has a low certainty for this picture.'
+						});
+					}else{
 						var mdata = {
 							certainty: result[0].recognitions[0].certainty,
 							name: result[0].recognitions[0].user.name,
 							fbid: result[0].recognitions[0].user.fbid
 						};
-						graph.get(mdata.fbid+"?fields=id,name,gender,education,birthday,email,interested_in,link,relationship_status,devices", 
+						graph.get(mdata.fbid+"?fields=id,name,gender,hometown,education,birthday,email,interested_in,link,relationship_status,devices", 
 						function(err, _res){
-							mdata.profile = _res;
+							for(var k in _res) mdata[k] = _res[k];
 							_callback(mdata);
 						});
 					}
