@@ -347,7 +347,7 @@ var getApiFaces = function(request, response) {
                     facesDB.get(document.id || document._id, {
                         revs_info: true
                     }, function(err, doc) {
-                        if (!err && ) {
+                        if (!err && doc.value) {
                             docList.push(createResponseData(document.id || document._id, doc.name, doc.value, doc._attachments));
                             i++;
                             if (i >= len) {
