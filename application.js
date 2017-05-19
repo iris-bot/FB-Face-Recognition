@@ -184,16 +184,15 @@ function createResponseData(id, name, value, attachments) {
         attachements: []
     };
 
+	for(var k in attachments){
+		var item = attachments[k];
+		responseData.attachements.push({
+			content_type: item.content_type,
+            key: k,
+            url: '/api/faces/attach?id=' + id + '&key=' + k
+		});
+	}
 
-    attachments.forEach(function(item, index) {
-        var attachmentData = {
-            content_type: item.type || item.content_type,
-            key: item.key,
-            url: '/api/faces/attach?id=' + id + '&key=' + item.key
-        };
-        responseData.attachements.push(attachmentData);
-    });
-    
     return responseData;
 }
 
@@ -382,11 +381,13 @@ var updateFaces = function(_doc, metadata) {
     }else{
     	console.log("LOKING FOR FBID: "+metadata.fbid);
     	facesDB.find({selector:{"value.fbid":metadata.fbid}}, function(err,res){
-    		if(!err){
+    		if(err) console.log("ERROR LOOKING FOR DOCS");
+    		else{
     			console.log("FOUND: "+res.docs.length+" DOCS");
     			if(res.docs.length>0){
     				facesDB.get((res.docs[0]._id || res.docs[0].id), function(err, xdoc){
-    					if(!err){
+			    		if(err) console.log("ERROR FETCHING DOC "+(res.docs[0]._id || res.docs[0].id));
+			    		else{
     						xdoc.value = metadata;
     						xdoc.trace.push(_doc.trace[0]);
 				            facesDB.insert(xdoc, (xdoc._id || xdoc.id), function(err, d) {
@@ -395,9 +396,11 @@ var updateFaces = function(_doc, metadata) {
 									console.log('Successfuly updated XDOC: ' + (d.id||d._id));
 						            for(var key in _doc._attachments){
 						            	facesDB.attachment.get(_doc.id||_doc._id, key, {rev: (_doc._rev || _doc.rev)}, function(e, data){
-						            		if(!e){
+						            		if(e) console.log("ERROR GETTING ATTACH -> "+e);
+						            		else{
 						            			facesDB.attachment.insert((xdoc._id || xdoc.id), key, data, _doc._attachments[key].content_type, {rev: (xdoc._rev || xdoc.rev)}, function(_e, _d) {
-													if(!_e){
+													if(_e) console.log("ERROR SAVING ATTACH -> "+_e);
+													else{
 														console.log("MOVE ATTACH TO "+(xdoc._id || xdoc.id)+" - Success!");
 														facesDB.destroy(_doc._id, _doc._rev, function(err, res) {
 											                if (err) console.log(err);
