@@ -7,34 +7,15 @@ function encodeUriAndQuotes(untrustedStr) {
 }
 
 function loadItems() {
-	console.log("loading data");
+	showLoadingMessage();
+
     xhrGet(REST_DATA, function(data) {
 		console.log(data);
 
-        var receivedItems = data || [];
-        var items = [];
-        var i;
-        // Make sure the received items have correct format
-        for (i = 0; i < receivedItems.length; ++i) {
-            var item = receivedItems[i];
-            if (item && 'id' in item) {
-                items.push(item);
-            }
+        for (var i = 0; i < data.length; ++i) {
+            addItem(data[i]);
         }
-        var hasItems = items.length;
-        if (!hasItems) {
-            items = [];
-        }
-        for (i = 0; i < items.length; ++i) {
-            addItem(items[i], !hasItems);
-        }
-        if (!hasItems) {
-            var table = document.getElementById('notes');
-            var nodes = [];
-            for (i = 0; i < table.rows.length; ++i) {
-                nodes.push(table.rows[i].firstChild.firstChild);
-            }
-        }
+        
         //stop showing loading message
         stopLoadingMessage();
     }, function(err) {
@@ -79,7 +60,7 @@ function setRowContent(item, row) {
 
 }
 
-function addItem(item, isNew) {
+function addItem(item) {
 
     var row = document.createElement('tr');
     row.className = "tableRows";
@@ -94,7 +75,6 @@ function addItem(item, isNew) {
     
     var table = document.getElementById('notes');
     table.lastChild.appendChild(row);
-    row.isNew = !item || isNew;
 
 }
 
@@ -121,5 +101,3 @@ function stopLoadingMessage() {
     document.getElementById('loadingImage').innerHTML = "";
 }
 
-showLoadingMessage();
-loadItems();
