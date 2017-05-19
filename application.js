@@ -417,12 +417,7 @@ var getApiFaces = function(request, response) {
                         revs_info: true
                     }, function(err, doc) {
                         if (!err) {
-                            docList.push({
-                            	id: doc.id,
-                            	name: doc.name,
-                            	value: doc.value,
-                            	attachements: doc.attachements
-                            });
+                            docList.push(createResponseData(doc.id, doc.name, doc.value, doc.attachments));
                             i++;
                             if (i >= len) {
                                 response.write(JSON.stringify(docList));
@@ -476,8 +471,9 @@ var updateFaces = function(idx, _doc) {
             			xdoc.value = _doc.value[idx];
 			            xdoc.name = _doc.value[idx].name;
 			            xdoc.attachements.push(_doc.attachements[idx]);
+			            xdoc = createResponseData(xdoc._id, xdoc.name, xdoc.value, xdoc.attachments);
 			            console.log("XDOC contains "+xdoc.attachements.length+" attchs");
-			            facesDB.insert(xdoc, xdoc._id, function(e, d) {
+			            facesDB.insert(xdoc, xdoc.id, function(e, d) {
 			                if (e) {
 			                    console.log('Error updating '+ d.id +" -> " + e);
 			                }else{
