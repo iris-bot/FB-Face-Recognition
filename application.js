@@ -339,16 +339,16 @@ var getApiFaces = function(request, response) {
     var i = 0;
     facesDB.find({selector:{metadata:{"$exists":true}}},function(err, body) {
         if (!err) {
-            var len = body.rows.length;
-            console.log('total # of docs -> ' + len);
+            var len = body.docs.length;
+            console.log('total # of identified people -> ' + len);
 
-                body.rows.forEach(function(document) {
+                body.docs.forEach(function(document) {
 
-                    facesDB.get(document.id, {
+                    facesDB.get(document.id || document._id, {
                         revs_info: true
                     }, function(err, doc) {
                         if (!err) {
-                            docList.push(createResponseData(document.id, doc.name, doc.value, doc._attachments));
+                            docList.push(createResponseData(document.id || document._id, doc.name, doc.value, doc._attachments));
                             i++;
                             if (i >= len) {
                                 response.write(JSON.stringify(docList));
