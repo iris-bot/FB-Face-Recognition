@@ -256,40 +256,46 @@ var postApiFacesAttach = function(request, response) {
 
     var file = request.files.file;
 
-    facesDB.insert({
-        name: sanitizeInput(request.query.name),
-        create_date: new Date()
-    }, '', function(err, doc) {
-        if (err) {
-            console.log(err);
-        } else {
-            fs.readFile(file.path, function(err, data) {
-            	if(!err && file){
-            		facesDB.attachment.insert(doc._id, file.name, data, file.type, {rev: doc._rev}, 
-            		function(err, _d) {
-            			if(!err){
-	                        console.log('Attachment saved successfully.. ');
-	                        facesDB.get(_d.id, function(err, _doc){
-	                        	if(!err){
-	                        		var _attch = _doc._attachments[0];
-	                        		var url = '/api/faces/attach?id=' + _d.id + '&key=' + _attch.key;
-	                        		facebook.recognize(config['base-url']+url, function(metadata){
-							        	var jstr = "null";
-							        	try{jstr = JSON.stringify(metadata);}catch(e){}
-							        	console.log("METADATA: "+jstr);
-						        		response.write(jstr);
-	                                    response.end();
-			                            updateFaces(_doc, metadata);
-	                                    return;
-							        });
-	                        	}
-	                        });
-            			}
-            		});
-            	}
-            });
-        }
-    });
+	if(file){
+	    facesDB.insert({
+	        name: sanitizeInput(file.name),
+	        date: new Date()
+	    }, '', function(err, doc) {
+	        if (err) console.log(err);
+	        else {
+	            fs.readFile(file.path, function(err, data) {
+	            	if(!err){
+	            		facesDB.attachment.insert((doc._id || doc.id), file.name, data, file.type, {rev: (doc._rev || doc.rev)}, 
+	            		function(err, _d) {
+	            			if(!err){
+		                        console.log('Attachment saved successfully.. ');
+		                        facesDB.get((_d.id || _d._id), function(err, _doc){
+		                        	if(!err){
+		                        		var _attch = _doc._attachments[0];
+		                        		var url = '/api/faces/attach?id=' + (_d.id || _d._id) + '&key=' + _attch.key;
+		                        		facebook.recognize(config['base-url']+url, function(metadata){
+								        	var jstr = "null";
+								        	try{jstr = JSON.stringify(metadata);}catch(e){}
+								        	console.log("METADATA: "+jstr);
+							        		response.write(jstr);
+		                                    response.end();
+				                            updateFaces(_doc, metadata);
+		                                    return;
+								        });
+		                        	}
+		                        });
+	            			}
+	            		});
+	            	}
+	            });
+	        }
+	    });
+	}else{
+		console.log("NO FILE TO ATTACH");
+		response.write('{"error":"no file to attach"}');
+        response.end();
+        return;
+	}
 
 };
 
@@ -363,9 +369,9 @@ var updateFaces = function(_doc, metadata) {
     if(metadata.error){
     	// NO FACEBOOK METADATA
     	console.log("FB_RECOG_ERR: "+metadata.error);
-        facesDB.destroy(_doc._id, _doc._rev, function(err, res) {
+        facesDB.destroy((_doc._id || _doc.id), (_doc._rev || _doc.rev), function(err, res) {
             if (err) console.log(err);
-            else console.log("REMOVED "+_doc._id);
+            else console.log("REMOVED "+ (_doc._id || _doc.id));
         });
     }else{
     	console.log("LOKING FOR FBID: "+metadata.fbid);
@@ -373,19 +379,19 @@ var updateFaces = function(_doc, metadata) {
     		if(!err){
     			console.log("FOUND: "+res.docs.length+" DOCS");
     			if(res.docs.length>0){
-    				facesDB.get(res.docs[0]._id, function(err, xdoc){
+    				facesDB.get((res.docs[0]._id || res.docs[0].id), function(err, xdoc){
     					if(!err){
     						xdoc.value = metadata;
 				            for(var key in _doc._attachments){
 				            	xdoc._attachments[key] = _doc._attachments[key];
 				            }
-				            facesDB.insert(xdoc, xdoc._id, function(err, d) {
-				                if (err) console.log('Error updating '+ xdoc._id +" -> " + e);
+				            facesDB.insert(xdoc, (xdoc._id || xdoc.id), function(err, d) {
+				                if (err) console.log('Error updating '+ (xdoc._id || xdoc.id) +" -> " + err);
 				                else{
-									console.log('Successfuly updated XDOC: ' + d.id);
+									console.log('Successfuly updated XDOC: ' + (d.id||d._id));
 									facesDB.destroy(_doc._id, _doc._rev, function(err, res) {
 						                if (err) console.log(err);
-						                else console.log("REMOVED "+_doc._id);
+						                else console.log("REMOVED "+(_doc._id||_doc.id));
 						            });
 					            }
 				            });
@@ -393,11 +399,11 @@ var updateFaces = function(_doc, metadata) {
     				});
     			}else{
     				_doc.value = metadata;
-		            facesDB.insert(_doc, _doc._id, function(err, _doc) {
+		            facesDB.insert(_doc, (_doc._id || _doc.id), function(err, _doc) {
 		                if (err) {
-		                    console.log('Error updating '+ _doc._id +" -> " + err);
+		                    console.log('Error updating '+ (_doc._id || _doc.id) +" -> " + err);
 		                }else{
-							console.log('Successfuly updated ' + _doc._id);                	
+							console.log('Successfuly updated ' + (_doc._id || _doc.id));                	
 		                }
 		            });
     			}
