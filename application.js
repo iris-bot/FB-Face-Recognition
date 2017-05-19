@@ -394,7 +394,7 @@ var updateFaces = function(_doc, metadata) {
 				                else{
 									console.log('Successfuly updated XDOC: ' + (d.id||d._id));
 						            for(var key in _doc._attachments){
-						            	facesDB.attachment.get(_doc.id||_doc._id, key, {rev:rev||rev:_rev}, function(e, data){
+						            	facesDB.attachment.get(_doc.id||_doc._id, key, {rev: (_doc._rev || _doc.rev)}, function(e, data){
 						            		if(!e){
 						            			facesDB.attachment.insert((xdoc._id || xdoc.id), key, data, _doc._attachments[key].content_type, {rev: (xdoc._rev || xdoc.rev)}, function(_e, _d) {
 													if(!_e){
