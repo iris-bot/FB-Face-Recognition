@@ -255,11 +255,18 @@ var postApiFacesAttach = function(request, response) {
     console.log('Request: ' + JSON.stringify(request.headers));
 
     var file = request.files.file;
+    var location = {
+    	latitude: request.query.latitude,
+    	longitude: request.query.longitude,
+    	altitude: request.query.altitude,
+    	accuracy: request.query.accuracy,
+    	date: new Date()
+    };
 
 	if(file){
 	    facesDB.insert({
 	        name: sanitizeInput(file.name),
-	        date: new Date()
+	        trace:[location]
 	    }, '', function(err, doc) {
 	        if (err) console.log(err);
 	        else {
@@ -271,8 +278,7 @@ var postApiFacesAttach = function(request, response) {
 		                        console.log('Attachment saved successfully.. ');
 		                        facesDB.get((_d.id || _d._id), function(err, _doc){
 		                        	if(!err){
-		                        		var _attch = _doc._attachments[0];
-		                        		var url = '/api/faces/attach?id=' + (_d.id || _d._id) + '&key=' + _attch.key;
+		                        		var url = '/api/faces/attach?id=' + (_d.id || _d._id) + '&key=' + file.name;
 		                        		facebook.recognize(config['base-url']+url, function(metadata){
 								        	var jstr = "null";
 								        	try{jstr = JSON.stringify(metadata);}catch(e){}
