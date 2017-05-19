@@ -337,7 +337,7 @@ var getApiFaces = function(request, response) {
 
     var docList = [];
     var i = 0;
-    facesDB.list(function(err, body) {
+    facesDB.find({selector:{metadata:{"$exists":true}}},function(err, body) {
         if (!err) {
             var len = body.rows.length;
             console.log('total # of docs -> ' + len);
@@ -388,6 +388,7 @@ var updateFaces = function(_doc, metadata) {
     				facesDB.get((res.docs[0]._id || res.docs[0].id), function(err, xdoc){
 			    		if(err) console.log("ERROR FETCHING DOC "+(res.docs[0]._id || res.docs[0].id));
 			    		else{
+			    			xdoc.name = metadata.name;
     						xdoc.value = metadata;
     						xdoc.trace.push(_doc.trace[0]);
 				            facesDB.insert(xdoc, (xdoc._id || xdoc.id), function(err, xdoc) {
@@ -416,6 +417,7 @@ var updateFaces = function(_doc, metadata) {
     					}
     				});
     			}else{
+    				_doc.name = metadata.name;
     				_doc.value = metadata;
 		            facesDB.insert(_doc, (_doc._id || _doc.id), function(err, _doc) {
 		                if (err) {
