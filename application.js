@@ -472,7 +472,9 @@ var updateFaces = function(idx, _doc) {
 			            xdoc.name = _doc.value[idx].name;
 			            xdoc.attachements.push(_doc.attachements[idx]);
 			            var attachs = xdoc._attachments;
-			            attachs.push(_doc._attachments[idx]);
+			            for(var key in _doc.attachements){
+			            	attachs[key](_doc._attachments[key]);
+			            }
 			            xdoc = createResponseData(xdoc._id, xdoc.name, xdoc.value, xdoc.attachements);
 			            xdoc._attachments = attachs;
 			            console.log("XDOC contains "+xdoc._attachments.length+" attchs");
