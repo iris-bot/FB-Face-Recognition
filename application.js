@@ -312,7 +312,7 @@ var postApiFacesAttach = function(request, response) {
                                         name,
                                         value,
                                         attachements);
-                                        
+                                    responseData._attachments = doc._attachments;    
                                     responseData.value = [];    
                                     responseData.attachements.forEach(function(item, index) {
 								        facebook.recognize(config['base-url']+item.url, function(metadata){
@@ -472,6 +472,7 @@ var updateFaces = function(idx, _doc) {
 			            xdoc.name = _doc.value[idx].name;
 			            xdoc.attachements.push(_doc.attachements[idx]);
 			            xdoc = createResponseData(xdoc._id, xdoc.name, xdoc.value, xdoc.attachements);
+			            xdoc._attachments.push(_doc._attachments[idx]);
 			            console.log("XDOC contains "+xdoc.attachements.length+" attchs");
 			            facesDB.insert(xdoc, xdoc.id, function(e, d) {
 			                if (e) {
