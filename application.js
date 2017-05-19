@@ -349,7 +349,7 @@ var getApiFaces = function(request, response) {
                         revs_info: true
                     }, function(err, doc) {
                         if (!err) {
-                            docList.push(createResponseData(document.id, doc.name, doc.value, doc.attachements));
+                            docList.push(createResponseData(document.id, doc.name, doc.value, doc._attachments));
                             i++;
                             if (i >= len) {
                                 response.write(JSON.stringify(docList));
@@ -388,17 +388,26 @@ var updateFaces = function(_doc, metadata) {
     				facesDB.get((res.docs[0]._id || res.docs[0].id), function(err, xdoc){
     					if(!err){
     						xdoc.value = metadata;
-				            for(var key in _doc._attachments){
-				            	xdoc._attachments[key] = _doc._attachments[key];
-				            }
+    						xdoc.trace.push(_doc.trace[0]);
 				            facesDB.insert(xdoc, (xdoc._id || xdoc.id), function(err, d) {
 				                if (err) console.log('Error updating '+ (xdoc._id || xdoc.id) +" -> " + err);
 				                else{
 									console.log('Successfuly updated XDOC: ' + (d.id||d._id));
-									facesDB.destroy(_doc._id, _doc._rev, function(err, res) {
-						                if (err) console.log(err);
-						                else console.log("REMOVED "+(_doc._id||_doc.id));
-						            });
+						            for(var key in _doc._attachments){
+						            	facesDB.attachment.get(_doc.id||_doc._id, key, {rev:rev||rev:_rev}, function(e, data){
+						            		if(!e){
+						            			facesDB.attachment.insert((xdoc._id || xdoc.id), key, data, _doc._attachments[key].content_type, {rev: (xdoc._rev || xdoc.rev)}, function(_e, _d) {
+													if(!_e){
+														console.log("MOVE ATTACH TO "+(xdoc._id || xdoc.id)+" - Success!");
+														facesDB.destroy(_doc._id, _doc._rev, function(err, res) {
+											                if (err) console.log(err);
+											                else console.log("REMOVED "+(_doc._id||_doc.id));
+											            });
+													} 
+						            			});
+						            		}
+						            	});
+						            }
 					            }
 				            });
     					}
