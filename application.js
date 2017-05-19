@@ -417,7 +417,7 @@ var getApiFaces = function(request, response) {
                         revs_info: true
                     }, function(err, doc) {
                         if (!err) {
-                            docList.push(createResponseData(doc.id, doc.name, doc.value, doc.attachments));
+                            docList.push(createResponseData(doc.id, doc.name, doc.value, doc.attachements));
                             i++;
                             if (i >= len) {
                                 response.write(JSON.stringify(docList));
