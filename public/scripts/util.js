@@ -103,7 +103,7 @@ function xhrDelete(url, callback, errback){
 }
 
 function parseJson(str){
-	return window.JSON ? JSON.parse(str) : eval('(' + str + ')');
+	return /*window.JSON ? JSON.parse(str) :*/ eval('(' + str + ')');
 }
 
 function objectToQuery(map){
