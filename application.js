@@ -187,7 +187,7 @@ function createResponseData(id, name, value, attachments) {
 
     attachments.forEach(function(item, index) {
         var attachmentData = {
-            content_type: item.type,
+            content_type: item.type || item.content_type,
             key: item.key,
             url: '/api/faces/attach?id=' + id + '&key=' + item.key
         };
@@ -417,7 +417,7 @@ var getApiFaces = function(request, response) {
                         revs_info: true
                     }, function(err, doc) {
                         if (!err) {
-                            docList.push(createResponseData(doc.id, doc.name, doc.value, doc.attachements));
+                            docList.push(createResponseData(document.id, doc.name, doc.value, doc.attachements));
                             i++;
                             if (i >= len) {
                                 response.write(JSON.stringify(docList));
@@ -471,7 +471,7 @@ var updateFaces = function(idx, _doc) {
             			xdoc.value = _doc.value[idx];
 			            xdoc.name = _doc.value[idx].name;
 			            xdoc.attachements.push(_doc.attachements[idx]);
-			            xdoc = createResponseData(xdoc._id, xdoc.name, xdoc.value, xdoc.attachments);
+			            xdoc = createResponseData(xdoc._id, xdoc.name, xdoc.value, xdoc.attachements);
 			            console.log("XDOC contains "+xdoc.attachements.length+" attchs");
 			            facesDB.insert(xdoc, xdoc.id, function(e, d) {
 			                if (e) {
