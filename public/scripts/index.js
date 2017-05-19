@@ -7,10 +7,9 @@ function encodeUriAndQuotes(untrustedStr) {
 }
 
 function loadItems() {
+	console.log("loading data");
     xhrGet(REST_DATA, function(data) {
 		console.log(data);
-        //stop showing loading message
-        stopLoadingMessage();
 
         var receivedItems = data || [];
         var items = [];
@@ -36,8 +35,12 @@ function loadItems() {
                 nodes.push(table.rows[i].firstChild.firstChild);
             }
         }
+        //stop showing loading message
+        stopLoadingMessage();
     }, function(err) {
         console.error(err);
+        //stop showing loading message
+        stopLoadingMessage();
     });
 }
 
