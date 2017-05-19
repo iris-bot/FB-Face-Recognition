@@ -337,17 +337,17 @@ var getApiFaces = function(request, response) {
 
     var docList = [];
     var i = 0;
-    facesDB.find({selector:{metadata:{"$exists":true}}},function(err, body) {
+    facesDB.list(function(err, body) {
         if (!err) {
-            var len = body.docs.length;
-            console.log('total # of identified people -> ' + len);
+            var len = body.rows.length;
+            console.log('total # of rows -> ' + len);
 
-                body.docs.forEach(function(document) {
+                body.rows.forEach(function(document) {
 
                     facesDB.get(document.id || document._id, {
                         revs_info: true
                     }, function(err, doc) {
-                        if (!err) {
+                        if (!err && ) {
                             docList.push(createResponseData(document.id || document._id, doc.name, doc.value, doc._attachments));
                             i++;
                             if (i >= len) {
