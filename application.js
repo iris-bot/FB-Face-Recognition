@@ -463,7 +463,7 @@ var updateFaces = function(idx, _doc) {
 	            });
             }else{
             	console.log("LOKING FOR FBID: "+_doc.value[idx].fbid);
-            	facesDB.find({selector:{"value.fbid":_doc.value[idx].fbid}}, function(err,res){
+            	facesDB.find({selector:{"value.fbid":_doc.value[idx].fbid},fields:["_id","attachements","_attachments"]}, function(err,res){
             		var _docs = res.docs;
             		console.log("FOUND: "+_docs.length+" DOCS");
             		if(_docs.length>0){
@@ -471,9 +471,11 @@ var updateFaces = function(idx, _doc) {
             			xdoc.value = _doc.value[idx];
 			            xdoc.name = _doc.value[idx].name;
 			            xdoc.attachements.push(_doc.attachements[idx]);
+			            var attachs = xdoc._attachments;
+			            attachs.push(_doc._attachments[idx]);
 			            xdoc = createResponseData(xdoc._id, xdoc.name, xdoc.value, xdoc.attachements);
-			            xdoc._attachments.push(_doc._attachments[idx]);
-			            console.log("XDOC contains "+xdoc.attachements.length+" attchs");
+			            xdoc._attachments = attachs;
+			            console.log("XDOC contains "+xdoc._attachments.length+" attchs");
 			            facesDB.insert(xdoc, xdoc.id, function(e, d) {
 			                if (e) {
 			                    console.log('Error updating '+ d.id +" -> " + e);
