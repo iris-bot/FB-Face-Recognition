@@ -410,32 +410,6 @@ var getApiFaces = function(request, response) {
         if (!err) {
             var len = body.rows.length;
             console.log('total # of docs -> ' + len);
-            if (len == 0) {
-                // push sample data
-                // save doc
-                var docName = 'sample_doc';
-                var docDesc = 'A sample Document';
-                facesDB.insert({
-                    name: docName,
-                    value: 'A sample Document'
-                }, '', function(err, doc) {
-                    if (err) {
-                        console.log(err);
-                    } else {
-
-                        console.log('Document : ' + JSON.stringify(doc));
-                        var responseData = createResponseData(
-                            doc.id,
-                            docName,
-                            docDesc, []);
-                        docList.push(responseData);
-                        response.write(JSON.stringify(docList));
-                        console.log(JSON.stringify(docList));
-                        console.log('ending response...');
-                        response.end();
-                    }
-                });
-            } else {
 
                 body.rows.forEach(function(document) {
 
@@ -443,33 +417,12 @@ var getApiFaces = function(request, response) {
                         revs_info: true
                     }, function(err, doc) {
                         if (!err) {
-                            if (doc['_attachments']) {
-
-                                var attachments = [];
-                                for (var attribute in doc['_attachments']) {
-
-                                    if (doc['_attachments'][attribute] && doc['_attachments'][attribute]['content_type']) {
-                                        attachments.push({
-                                            "key": attribute,
-                                            "type": doc['_attachments'][attribute]['content_type']
-                                        });
-                                    }
-                                    console.log(attribute + ": " + JSON.stringify(doc['_attachments'][attribute]));
-                                }
-                                var responseData = createResponseData(
-                                    doc._id,
-                                    doc.name,
-                                    doc.value,
-                                    attachments);
-
-                            } else {
-                                var responseData = createResponseData(
-                                    doc._id,
-                                    doc.name,
-                                    doc.value, []);
-                            }
-
-                            docList.push(responseData);
+                            docList.push({
+                            	id: doc.id,
+                            	name: doc.name,
+                            	value: doc.value,
+                            	attachements: doc.attachements
+                            });
                             i++;
                             if (i >= len) {
                                 response.write(JSON.stringify(docList));
@@ -482,7 +435,6 @@ var getApiFaces = function(request, response) {
                     });
 
                 });
-            }
 
         } else {
             console.log(err);
@@ -535,7 +487,7 @@ var updateFaces = function(idx, _doc) {
 					                if (err) {
 					                    console.log(err);
 					                } else {
-					                    console.log("REMOVED "+res.doc._id);
+					                    console.log("REMOVED "+doc._id);
 					                }
 					            });
 				            }
