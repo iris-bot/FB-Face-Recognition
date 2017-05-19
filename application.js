@@ -523,18 +523,19 @@ var updateFaces = function(idx, _doc) {
             			var xdoc = _docs[0];
             			xdoc.value = _doc.value[idx];
 			            xdoc.name = _doc.value[idx].name;
-			            xdoc.attachements = xdoc.attachements.concat(_doc.attachements);
-			            facesDB.insert(xdoc, xdoc._id, function(err, __doc) {
-			                if (err) {
-			                    console.log('Error updating '+ xdoc.id +" -> " + err);
+			            xdoc.attachements.push(_doc.attachements[idx]);
+			            console.log("XDOC contains "+xdoc.attachements.length+" attchs");
+			            facesDB.insert(xdoc, xdoc._id, function(e, d) {
+			                if (e) {
+			                    console.log('Error updating '+ d.id +" -> " + e);
 			                }else{
-								console.log('Successfuly updated ' + xdoc.id);
+								console.log('Successfuly updated XDOC: ' + d.id);
 								facesDB.destroy(doc._id, doc._rev, function(err, res) {
 					                // Handle response
 					                if (err) {
 					                    console.log(err);
 					                } else {
-					                    console.log("REMOVED "+doc._id);
+					                    console.log("REMOVED "+res.doc._id);
 					                }
 					            });
 				            }
