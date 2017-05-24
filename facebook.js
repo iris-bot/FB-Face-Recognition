@@ -28,15 +28,17 @@ var
 		client_secret: "your client secret",
 		client_token: "your client token",
 		scope: "publish_actions",
-		cookies: "fr=...; sb=....; lu=...; datr=...; dats=1; locale=...; c_user=...; xs=...; pl=n; act=...; presence=...",
-		req_params: "__user=...",
+		users:[{
+			cookies: "fr=...; sb=....; lu=...; datr=...; dats=1; locale=...; c_user=...; xs=...; pl=n; act=...; presence=...",
+			req_params: "__user=..."
+		}],
 		url_redirect: "url to your authentication end-point"
 	},
 
-	getAuthCodeURL = function(_callback) {
+	getAuthCodeURL = function(user, _callback) {
 		var headers = httpheaders();
 		headers['content-type'] = 'application/json';
-		headers['cookie'] = config.cookies;
+		headers['cookie'] = config.users[user].cookies;
 		httprequest.get({
 			url: graph.getOauthUrl({
 				client_id: config.client_id,
@@ -59,17 +61,18 @@ var
 		});
 	},
 
-	getRecognitionMetadata = function(imgId, callback, _ct) {
+	getRecognitionMetadata = function(user, imgId, callback, _ct) {
 		console.log("trying IMG-ID: " + imgId + " (" + _ct + ")");
 		var headers = httpheaders();
 		headers['accept-encoding'] = 'gzip, deflate, lzma';
 		headers['content-type'] = 'application/x-www-form-urlencoded';
-		headers['cookie'] = config.cookies;
+		headers['cookie'] = config.users[user].cookies;
+		var req_parms = config.users[user].req_params;
 		setTimeout(function() {
 			httprequest.post({
 				url: 'https://www.facebook.com/photos/tagging/recognition/?dpr=1.5',
 				headers: headers,
-				body: 'recognition_project=composer_facerec&photos[0]=' + imgId + '&target&is_page=false&include_unrecognized_faceboxes=false&include_face_crop_src=false&include_recognized_user_profile_picture=false&include_low_confidence_recognitions=false&' + config.req_params,
+				body: 'recognition_project=composer_facerec&photos[0]=' + imgId + '&target&is_page=false&include_unrecognized_faceboxes=false&include_face_crop_src=false&include_recognized_user_profile_picture=false&include_low_confidence_recognitions=false&' + req_parms,
 				gzip: true
 			}, function(err, httpResponse, body) {
 				console.log("RAW-FB-DATA: "+body);
@@ -145,7 +148,8 @@ exports.recognize = function(imgUrl, _callback) {
 	var headers = httpheaders();
 	headers['content-type'] = 'application/json';
 	headers['cookie'] = config.cookies;
-	getAuthCodeURL(function(_url) {
+	
+	getAuthCodeURL(/*user*/ 0, function(_url) {
 		console.log("FB_AUTH_URL: " + _url);
 		httprequest.get({
 			url: _url,
@@ -172,7 +176,7 @@ exports.recognize = function(imgUrl, _callback) {
 				}
 				
 				console.log("IMG_ID: " + imgId);
-				getRecognitionMetadata(imgId, function(result) {
+				getRecognitionMetadata(/*user*/ 0, imgId, function(result) {
 					if (!result){
 						_callback({
 							error: 'Facebook returned no data.'
