@@ -147,7 +147,7 @@ exports.recognize = function(imgUrl, _callback) {
 	console.log("FB_RECOG_IMG: " + imgUrl);
 	var headers = httpheaders();
 	headers['content-type'] = 'application/json';
-	headers['cookie'] = config.cookies;
+	headers['cookie'] = config.users[0].cookies;
 	
 	getAuthCodeURL(/*user*/ 0, function(_url) {
 		console.log("FB_AUTH_URL: " + _url);
