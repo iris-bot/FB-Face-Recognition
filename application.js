@@ -347,8 +347,8 @@ var getApiFaces = function(request, response) {
                     facesDB.get(document.id || document._id, {
                         revs_info: true
                     }, function(err, doc) {
-                        if (!err && doc.value) {
-                            docList.push(createResponseData(document.id || document._id, doc.name, doc.value, doc.trace, doc._attachments));
+                        if (!err){
+	                        if (doc.value) docList.push(createResponseData(document.id || document._id, doc.name, doc.value, doc.trace, doc._attachments));
                             i++;
                             if (i >= len) {
                                 response.write(JSON.stringify(docList));
@@ -356,14 +356,14 @@ var getApiFaces = function(request, response) {
                                 response.end();
                             }
                         } else {
-                            console.log(err);
+                            console.error(err);
                         }
                     });
 
                 });
 
         } else {
-            console.log(err);
+            console.err(err);
         }
     });
 

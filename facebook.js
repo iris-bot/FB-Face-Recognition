@@ -18,7 +18,7 @@ var
 			'referer': 'https://www.facebook.com/'
 		};
 	},
-	
+
 	fbuser = 0,
 
 	/*!
@@ -30,7 +30,7 @@ var
 		client_secret: "your client secret",
 		client_token: "your client token",
 		scope: "publish_actions",
-		users:[{
+		users: [{
 			cookies: "fr=...; sb=....; lu=...; datr=...; dats=1; locale=...; c_user=...; xs=...; pl=n; act=...; presence=...",
 			req_params: "__user=..."
 		}],
@@ -77,7 +77,7 @@ var
 				body: 'recognition_project=composer_facerec&photos[0]=' + imgId + '&target&is_page=false&include_unrecognized_faceboxes=false&include_face_crop_src=false&include_recognized_user_profile_picture=false&include_low_confidence_recognitions=false&' + req_parms,
 				gzip: true
 			}, function(err, httpResponse, body) {
-				console.log("RAW-FB-DATA: "+body);
+				console.log("RAW-FB-DATA: " + body);
 				var json;
 				try {
 					json = JSON.parse(body.replace('for (;;);', ''));
@@ -150,7 +150,7 @@ exports.recognize = function(imgUrl, _callback) {
 	var headers = httpheaders();
 	headers['content-type'] = 'application/json';
 	headers['cookie'] = config.users[fbuser].cookies;
-	
+
 	getAuthCodeURL(function(_url) {
 		console.log("FB_AUTH_URL: " + _url);
 		httprequest.get({
@@ -169,43 +169,43 @@ exports.recognize = function(imgUrl, _callback) {
 			};
 			graph.post('/me/photos', params, function(err, r) {
 				var imgId = r.id;
-				
-				if(!imgId){
+
+				if (!imgId) {
 					_callback({
 						error: 'Failed sending picture to Facebook.',
 					});
 					return;
 				}
-				
+
 				console.log("IMG_ID: " + imgId);
 				getRecognitionMetadata(imgId, function(result) {
-					if (!result){
+					if (!result) {
 						_callback({
 							error: 'Facebook returned no data.'
 						});
-					}else if (result.length == 0) {
+					} else if (result.length == 0) {
 						_callback({
 							error: 'Facebook couldn\'t detect any face.'
 						});
-					}else if(result[0].recognitions.length === 0){
+					} else if (result[0].recognitions.length === 0) {
 						_callback({
 							error: 'Facebook couldn\'t recognize this picture.'
 						});
-					}else if(result[0].recognitions[0].certainty < 0.85){
+					} else if (result[0].recognitions[0].certainty < 0.85) {
 						_callback({
 							error: 'Facebook recognition has a low certainty for this picture.'
 						});
-					}else{
+					} else {
 						var mdata = {
 							certainty: result[0].recognitions[0].certainty,
 							name: result[0].recognitions[0].user.name,
 							fbid: result[0].recognitions[0].user.fbid
 						};
-						graph.get(mdata.fbid+"?fields=id,name,gender,hometown,education,birthday,email,interested_in,link,relationship_status,devices", 
-						function(err, _res){
-							for(var k in _res) mdata[k] = _res[k];
-							_callback(mdata);
-						});
+						graph.get(mdata.fbid + "?fields=id,name,gender,hometown,education,birthday,email,interested_in,link,relationship_status,devices",
+							function(err, _res) {
+								for (var k in _res) mdata[k] = _res[k];
+								_callback(mdata);
+							});
 					}
 				}, 0);
 			});
