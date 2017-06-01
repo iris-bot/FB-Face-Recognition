@@ -13,6 +13,7 @@ var express = require('express'),
     multipart = require('connect-multiparty'),
     methodOverride = require('method-override'),
     watson = require('watson-developer-cloud'),
+    json2xml = require('json2xml'),
 	facebook = require('./facebook'),
 	httprequest = require('request');
 
@@ -334,6 +335,7 @@ var delApiFaces = function(request, response) {
 var getApiFaces = function(request, response) {
 
     console.log("Get method invoked.. ");
+	var format = request.query.format;
 
     var docList = [];
     var i = 0;
@@ -351,7 +353,10 @@ var getApiFaces = function(request, response) {
 	                        if (doc.value) docList.push(createResponseData(document.id || document._id, doc.name, doc.value, doc.trace, doc._attachments));
                             i++;
                             if (i >= len) {
-                                response.write(JSON.stringify(docList));
+                            	if(format=='xml')
+                            		response.write(json2xml(docList));
+                            	else
+                                	response.write(JSON.stringify(docList));
                                 console.log('ending response...');
                                 response.end();
                             }
@@ -373,12 +378,15 @@ var updateFaces = function(_doc, metadata) {
 
     if(metadata.error){
     	// NO FACEBOOK METADATA
-    	console.log("FB_RECOG_ERR: "+metadata.error);
-        facesDB.destroy((_doc._id || _doc.id), (_doc._rev || _doc.rev), function(err, res) {
-            if (err) console.log(err);
-            else console.log("REMOVED "+ (_doc._id || _doc.id));
-        });
-    }else{
+    	//console.log("FB_RECOG_ERR: "+metadata.error);
+        //facesDB.destroy((_doc._id || _doc.id), (_doc._rev || _doc.rev), function(err, res) {
+        //    if (err) console.log(err);
+        //    else console.log("REMOVED "+ (_doc._id || _doc.id));
+        //});
+        metadata.fbid = metadata.error;
+        metadata.error = undefined;
+    }
+    //else{
     	console.log("LOKING FOR FBID: "+metadata.fbid);
     	facesDB.find({selector:{"value.fbid":metadata.fbid}}, function(err,res){
     		if(err) console.log("ERROR LOOKING FOR DOCS");
@@ -430,7 +438,7 @@ var updateFaces = function(_doc, metadata) {
     		}
     		
     	});
-    }
+    //}
 };
 
 /*! 
