@@ -128,7 +128,8 @@ exports.config = function(cfg) {
 exports.getAccessToken = function(req, res) {
 	if (!req.query.code) {
 		res.send({
-			"error": "missing authentication code"
+			"error": {"message":"missing authentication code",
+			"code": -403}
 		});
 	} else {
 		graph.authorize({
@@ -172,7 +173,8 @@ exports.recognize = function(imgUrl, _callback) {
 
 				if (!imgId) {
 					_callback({
-						error: 'Failed sending picture to Facebook.',
+						error: {"message":'Failed sending picture to Facebook.',
+						code: -499}
 					});
 					return;
 				}
@@ -181,19 +183,23 @@ exports.recognize = function(imgUrl, _callback) {
 				getRecognitionMetadata(imgId, function(result) {
 					if (!result) {
 						_callback({
-							error: 'Facebook returned no data.'
+							error: {"message": 'Facebook returned no data.',
+							code: -500}
 						});
 					} else if (result.length == 0) {
 						_callback({
-							error: 'Facebook couldn\'t detect any face.'
+							error: {"message": 'Facebook couldn\'t detect any face.',
+							code: -501}
 						});
 					} else if (result[0].recognitions.length === 0) {
 						_callback({
-							error: 'Facebook couldn\'t recognize this picture.'
+							error: {"message": 'Facebook couldn\'t recognize this picture.',
+							code: -502}
 						});
 					} else if (result[0].recognitions[0].certainty < 0.85) {
 						_callback({
-							error: 'Facebook recognition has a low certainty for this picture.'
+							error: {"message": 'Facebook recognition has a low certainty for this picture.',
+							code: -503}
 						});
 					} else {
 						var mdata = {

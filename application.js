@@ -383,7 +383,8 @@ var updateFaces = function(_doc, metadata) {
         //    if (err) console.log(err);
         //    else console.log("REMOVED "+ (_doc._id || _doc.id));
         //});
-        metadata.fbid = metadata.error;
+        metadata.fbid = metadata.error.code;
+        metadata.name = metadata.error.message;
         metadata.error = undefined;
     }
     //else{

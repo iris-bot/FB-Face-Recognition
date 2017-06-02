@@ -27,13 +27,16 @@ function loadItems() {
 
 function setRowContent(item, row) {
 	console.log(item);
-    var innerHTML = "<td class='contentName'><div>" + 
-    	(item.value.fbid?"<a href='http://facebook.com/"+item.value.fbid+"' target='_blank'>"+item.name+"</a>":"") +
-		"</div>";
-	
-	for(var k in item.value){
-		innerHTML += "<div>"+k+": "+item.value[k]+"</div>";
-	}
+    var innerHTML = "<td class='contentName'>";
+    
+    if(item.value){
+    	if(item.value.fbid){
+    		innerHTML += "<div>" + (item.value.fbid>0 ? "<a href='http://facebook.com/"+item.value.fbid+"' target='_blank'>"+item.name+"</a>" : item.name) + "</div>";
+    	}
+		for(var k in item.value){
+			innerHTML += "<div>"+k+": "+item.value[k]+"</div>";
+		}
+    }
 	
 	innerHTML += "</td><td class='contentDetails'><div class='flexBox'>";
 
