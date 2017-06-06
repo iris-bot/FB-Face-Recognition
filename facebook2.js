@@ -5,61 +5,23 @@
  */
 
 var _graph = require('fbgraph');
-
+var _config = {};
 var httpheaders = function() {
-		return {
-			'x_fb_background_state': 1,
-			'origin': 'https://www.facebook.com',
-			'accept-language': 'en-US,en;q=0.8',
-			'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:33.0) Gecko/20100101 Firefox/33.0',
-			'accept': '*/*',
-			'referer': 'https://www.facebook.com/'
-		};
+	return {
+		'x_fb_background_state': 1,
+		'origin': 'https://www.facebook.com',
+		'accept-language': 'en-US,en;q=0.8',
+		'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:33.0) Gecko/20100101 Firefox/33.0',
+		'accept': '*/*',
+		'referer': 'https://www.facebook.com/'
+	};
 };
 
-exports.getAccessToken = function(cfg, req, res) {
-	if (!req.query.code) {
-		res.send({
-			"error": {"message":"missing authentication code",
-			"code": -403}
-		});
-	} else {
-		_graph.authorize({
-			client_id: cfg.client_id,
-			redirect_uri: cfg.url_redirect,
-			client_secret: cfg.client_secret,
-			code: req.query.code
-		}, function(err, facebookRes) {
-			res.send(facebookRes);
-		});
-	}
+exports.fbSession = function(config){
+	_config = config;
 };
 
-exports.oldAccessToken = function(cfg, req, res) {
-	// we don't have a code yet, go to auth
-	if (!req.query.code) {
-		var authUrl = _graph.getOauthUrl({
-			client_id: cfg.client_id,
-			redirect_uri: cfg.url_redirect,
-			scope: cfg.scope
-		});
-
-		if (!req.query.error) res.redirect(authUrl);
-		else res.send('access denied');
-		return;
-	}
-	// code is set, let's get that access token
-	_graph.authorize({
-		client_id: cfg.client_id,
-		redirect_uri: cfg.url_redirect,
-		client_secret: cfg.client_secret,
-		code: req.query.code
-	}, function(err, facebookRes) {
-		res.send(facebookRes);
-	});
-};
-
-exports.fbSession = function(cfg) {
+exports.fbSession = function(config){
 	return {
 		graph: require('fbgraph'),
 		httprequest: require('request'),
@@ -68,12 +30,12 @@ exports.fbSession = function(cfg) {
 			var THIS = this;
 			var headers = httpheaders();
 			headers['content-type'] = 'application/json';
-			headers['cookie'] = cfg.cookies;
+			headers['cookie'] = config.cookies;
 			THIS.httprequest.get({
 				url: THIS.graph.getOauthUrl({
-					client_id: cfg.client_id,
-					redirect_uri: cfg.url_redirect,
-					scope: cfg.scope
+					client_id: config.client_id,
+					redirect_uri: config.url_redirect,
+					scope: config.scope
 				}),
 				headers: headers
 			}, function(err, httpResp, body) {
@@ -83,16 +45,23 @@ exports.fbSession = function(cfg) {
 				while (_url.indexOf("\\") > -1) _url = _url.replace("\\", "");
 				_callback(_url);
 			});
-		},	
-		
+		},
+	
+		cleanImagePost: function(imgId, callback, recogData) {
+			var THIS = this;
+			THIS.graph.del(imgId, function(err, r) {
+				callback(recogData);
+			});
+		},
+	
 		getRecognitionMetadata: function(imgId, callback, _ct) {
 			var THIS = this;
 			console.log("trying IMG-ID: " + imgId + " (" + _ct + ")");
 			var headers = httpheaders();
 			headers['accept-encoding'] = 'gzip, deflate, lzma';
 			headers['content-type'] = 'application/x-www-form-urlencoded';
-			headers['cookie'] = cfg.cookies;
-			var req_parms = cfg.req_params;
+			headers['cookie'] = config.cookies;
+			var req_parms = config.req_params;
 			setTimeout(function() {
 				THIS.httprequest.post({
 					url: 'https://www.facebook.com/photos/tagging/recognition/?dpr=1.5',
@@ -112,20 +81,13 @@ exports.fbSession = function(cfg) {
 				});
 			}, 500);
 		},
-		
-		cleanImagePost: function(imgId, callback, recogData) {
-			var THIS = this;
-			THIS.graph.del(imgId, function(err, r) {
-				callback(recogData);
-			});
-		},
-
+	
 		recognize: function(imgUrl, _callback) {
 			var THIS = this;
 			console.log("FB_RECOG_IMG: " + imgUrl);
 			var headers = httpheaders();
 			headers['content-type'] = 'application/json';
-			headers['cookie'] = cfg.cookies;
+			headers['cookie'] = config.cookies;
 		
 			THIS.getAuthCodeURL(function(_url) {
 				console.log("FB_AUTH_URL: " + _url);
@@ -194,6 +156,49 @@ exports.fbSession = function(cfg) {
 			});
 		},
 		
-		_dummy: null
+		dummy: null
 	};
 };
+
+exports.oldAccessToken = function(req, res) {
+	// we don't have a code yet, go to auth
+	if (!req.query.code) {
+		var authUrl = _graph.getOauthUrl({
+			client_id: _config.client_id,
+			redirect_uri: _config.url_redirect,
+			scope: _config.scope
+		});
+
+		if (!req.query.error) res.redirect(authUrl);
+		else res.send('access denied');
+		return;
+	}
+	// code is set, let's get that access token
+	_graph.authorize({
+		client_id: _config.client_id,
+		redirect_uri: _config.url_redirect,
+		client_secret: _config.client_secret,
+		code: req.query.code
+	}, function(err, facebookRes) {
+		res.send(facebookRes);
+	});
+};
+
+exports.getAccessToken = function(req, res) {
+	if (!req.query.code) {
+		res.send({
+			"error": {"message":"missing authentication code",
+			"code": -403}
+		});
+	} else {
+		_graph.authorize({
+			client_id: _config.client_id,
+			redirect_uri: _config.url_redirect,
+			client_secret: _config.client_secret,
+			code: req.query.code
+		}, function(err, facebookRes) {
+			res.send(facebookRes);
+		});
+	}
+};
+
