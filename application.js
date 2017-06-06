@@ -255,6 +255,8 @@ var postApiFacesAttach = function(request, response) {
     response.status(200);
     response.end();
 
+	configFB();
+
     console.log("Upload File Invoked..");
     console.log('Request: ' + JSON.stringify(request.headers));
 
