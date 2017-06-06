@@ -195,7 +195,7 @@ configFB();
  * functions
  */
 
-function createResponseData(id, name, value, trace, attachments) {
+function createResponseData(id, name, value, trace, attachments, limit) {
 
     var responseData = {
         id: id,
@@ -212,6 +212,7 @@ function createResponseData(id, name, value, trace, attachments) {
             key: k,
             url: '/api/faces/attach?id=' + id + '&key=' + k
 		});
+		if(limit>0 && k>=limit) break;
 	}
 
     return responseData;
@@ -363,6 +364,7 @@ var getApiFaces = function(request, response) {
 
     console.log("Get method invoked.. ");
 	var format = request.query.format;
+	var docId = request.query.id;
 
     var docList = [];
     var i = 0;
@@ -370,35 +372,33 @@ var getApiFaces = function(request, response) {
         if (!err) {
             var len = body.rows.length;
             console.log('total # of rows -> ' + len);
-
                 body.rows.forEach(function(document) {
-
-                    facesDB.get(document.id || document._id, {
-                        revs_info: true
-                    }, function(err, doc) {
-                        if (!err){
-	                        if (doc.value) docList.push(createResponseData(document.id || document._id, doc.name, doc.value, doc.trace, doc._attachments));
-                            i++;
-                            if (i >= len) {
-                            	if(format=='xml')
-                            		response.write(json2xml(docList));
-                            	else
-                                	response.write(JSON.stringify(docList));
-                                console.log('ending response...');
-                                response.end();
-                            }
-                        } else {
-                            console.error(err);
-                        }
-                    });
-
+					var _id = document.id || document._id;
+					if(!docId || docId===_id){
+	                    facesDB.get(document.id || document._id, {
+	                        revs_info: true
+	                    }, function(err, doc) {
+	                        if (!err){
+		                        if (doc.value) docList.push(createResponseData(document.id || document._id, doc.name, doc.value, doc.trace, doc._attachments, (docId?0:3) ));
+	                            i++;
+	                            if (i >= len) {
+	                            	if(format=='xml')
+	                            		response.write(json2xml(docList));
+	                            	else
+	                                	response.write(JSON.stringify(docList));
+	                                console.log('ending response...');
+	                                response.end();
+	                            }
+	                        } else {
+	                            console.error(err);
+	                        }
+	                    });
+					}
                 });
-
         } else {
             console.err(err);
         }
     });
-
 };
 
 var updateFaces = function(_doc, metadata) {
