@@ -90,7 +90,7 @@ exports.fbSession = function(config){
 			headers['cookie'] = config.cookies;
 		
 			THIS.getAuthCodeURL(function(_url) {
-				if(!_url.strToLower().startsWith("http")) {
+				if(!_url.toLowerCase().startsWith("http")) {
 					console.log("FB_AUTH_URL: bad url, maybe expired cookies!");
 					_callback({
 								error: {"message":'Bad Facebook authentication URL',
