@@ -205,14 +205,16 @@ function createResponseData(id, name, value, trace, attachments, limit) {
         attachements: []
     };
 
+	var _ct=0;
 	for(var k in attachments){
+		_ct++;
 		var item = attachments[k];
 		responseData.attachements.push({
 			content_type: item.content_type,
             key: k,
             url: '/api/faces/attach?id=' + id + '&key=' + k
 		});
-		if(limit>0 && k>=limit) break;
+		if(limit>0 || _ct>=limit) break;
 	}
 
     return responseData;
@@ -373,13 +375,15 @@ var getApiFaces = function(request, response) {
             var len = body.rows.length;
             console.log('total # of rows -> ' + len);
                 body.rows.forEach(function(document) {
+					
 					var _id = document.id || document._id;
+					
 					if(!docId || docId===_id){
 	                    facesDB.get(document.id || document._id, {
 	                        revs_info: true
 	                    }, function(err, doc) {
 	                        if (!err){
-		                        if (doc.value) docList.push(createResponseData(document.id || document._id, doc.name, doc.value, doc.trace, doc._attachments, (docId?0:3) ));
+		                        if (doc.value) docList.push(createResponseData(document.id || document._id, doc.name, doc.value, doc.trace, doc._attachments, (!docId ? 3 : 0) ));
 	                            i++;
 	                            if (i >= len) {
 	                            	if(format=='xml')
@@ -394,6 +398,7 @@ var getApiFaces = function(request, response) {
 	                        }
 	                    });
 					}
+					
                 });
         } else {
             console.err(err);
