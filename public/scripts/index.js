@@ -38,7 +38,7 @@ function setRowContent(item, row) {
 		}
     }
 	
-	innerHTML += "</td><td class='contentDetails'><div class='flexBox'>";
+	innerHTML += "</td><td class='contentDetails'><div id='pics"+item.id+"' class='flexBox'>";
 
 	for(var i in item.attachements){
 		var attach = item.attachements[i];
@@ -46,6 +46,8 @@ function setRowContent(item, row) {
         innerHTML += "<div class='contentTiles'><img height=\"50\" src=\"" + encodeUriAndQuotes(attach.url) + "\" title='"+tooltip+"'></div>";
 	}
 
+    innerHTML += "<div class='contentTiles'><button onclick='loadMore(this)'>ver mais...</button></div>";
+	
     innerHTML += "</div>";
 
     row.innerHTML = innerHTML + "</td><td class = 'contentAction'><span class='deleteBtn' onclick='deleteItem(this)' title='delete me'></span></td>";
@@ -84,6 +86,24 @@ function deleteItem(deleteBtnNode) {
     }
 }
 
+function loadMore(btnNode) {
+    var row = btnNode.parentNode.parentNode.parentNode;
+    var attribId = row.getAttribute('data-id');
+    if (attribId) {
+        xhrGet(REST_DATA + '?id=' + attribId, function(data) {
+            var item = data[0];
+            var innerHTML = "";
+			for(var i in item.attachements){
+				var attach = item.attachements[i];
+				var tooltip = item.trace[i].date + " | " + item.trace[i].latitude + " | " + item.trace[i].longitude;
+		        innerHTML += "<div class='contentTiles'><img height=\"50\" src=\"" + encodeUriAndQuotes(attach.url) + "\" title='"+tooltip+"'></div>";
+			}
+            document.getElementById("pics"+item.id).innerHTML = innerHTML;
+        }, function(err) {
+            console.error(err);
+        });
+    }
+}
 
 function showLoadingMessage() {
     document.getElementById('loadingImage').innerHTML = "Loading data " + "<img height=\"100\" width=\"100\" src=\"images/loading.gif\"></img>";

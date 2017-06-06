@@ -202,7 +202,8 @@ function createResponseData(id, name, value, trace, attachments, limit) {
         name: sanitizeInput(name),
         value: value, 
         trace: trace,
-        attachements: []
+        attachements: [],
+        pics: attachments.length
     };
 
 	var _ct=0;
@@ -214,7 +215,7 @@ function createResponseData(id, name, value, trace, attachments, limit) {
             key: k,
             url: '/api/faces/attach?id=' + id + '&key=' + k
 		});
-		if(limit>0 || _ct>=limit) break;
+		if(limit>0 && _ct>=limit) break;
 	}
 
     return responseData;
