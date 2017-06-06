@@ -311,7 +311,7 @@ var postApiFacesAttach = function(request, response) {
 									        	var md = metadata;
 									        	var jstr = "null";
 									        	try{jstr = JSON.stringify(md);}
-									        	catch(e){md={error:"metadata is not an object",code:"-404"};}
+									        	catch(e){md={error:{message:"metadata is not an object",code:"-404"}};}
 									        	for(var k in md){
 									        		if(!_metadata[k]) _metadata[k] = md[k];
 									        	}
