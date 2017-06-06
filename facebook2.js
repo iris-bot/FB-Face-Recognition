@@ -17,7 +17,7 @@ var httpheaders = function() {
 	};
 };
 
-exports.fbSession = function(config){
+exports.config = function(config){
 	_config = config;
 };
 
