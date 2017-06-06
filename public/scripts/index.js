@@ -87,7 +87,9 @@ function deleteItem(deleteBtnNode) {
 }
 
 function loadMore(btnNode) {
+	console.log(btnNode);
     var row = btnNode.parentNode.parentNode.parentNode;
+    console.log(row);
     var attribId = row.getAttribute('data-id');
     if (attribId) {
         xhrGet(REST_DATA + '?id=' + attribId, function(data) {
