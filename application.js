@@ -307,16 +307,17 @@ var postApiFacesAttach = function(request, response) {
 		                        	if(!err){
 		                        		var url = '/api/faces/attach?id=' + (_d.id || _d._id) + '&key=' + file.name;
 		                        		var _metadata = {};
+		                        		var _trials = 0;
 		                        		for (var j in fbSessions){
 		                        			var fbSession = fbSessions[j];
 		                        			fbSession.recognize(config['base-url']+url, function(metadata){
-		                        				
+		                        				_trials++;
 									        	var md = metadata;
 									        	try{JSON.stringify(md);}
 									        	catch(e){md={error:{message:"metadata is not an object",code:"-404"}};}
 									        	for(var k in md) if(!_metadata[k]) _metadata[k] = md[k];
 									        	console.log("METADATA("+(_doc._id||_doc.id)+"): "+JSON.stringify(md)+" ||| "+JSON.stringify(_metadata));
-					                            if(j==(fbSessions.length-1)) updateFaces(_doc, _metadata);
+					                            if(_trials==fbSessions.length) updateFaces(_doc, _metadata);
 			                                    return;
 									        });
 		                        		}
