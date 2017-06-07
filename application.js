@@ -425,8 +425,9 @@ var updateFaces = function(_doc, metadata) {
 		    			xdoc.name = metadata.name;
 						for(var k in metadata) xdoc.value[k] = metadata[k];
 						xdoc.trace.push(_doc.trace[0]);
+						var xdocId = (xdoc._id || xdoc.id);
 			            facesDB.insert(xdoc, (xdoc._id || xdoc.id), function(err, xdoc) {
-			                if (err) console.log('Error updating '+ (xdoc._id || xdoc.id) +" -> " + err);
+			                if (err) console.log('Error updating '+ xdocId +" -> " + err);
 			                else{
 								console.log('Successfuly updated XDOC: ' + (xdoc.id||xdoc._id));
 					            for(var key in _doc._attachments){
