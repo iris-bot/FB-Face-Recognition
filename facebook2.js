@@ -64,7 +64,7 @@ exports.fbSession = function(config){
 			var req_parms = config.req_params;
 			setTimeout(function() {
 				THIS.httprequest.post({
-					url: 'https://www.facebook.com/photos/tagging/recognition/?dpr=1.5',
+					url: 'https://www.facebook.com/photos/tagging/recognition/?dpr=1',
 					headers: headers,
 					body: 'recognition_project=composer_facerec&photos[0]=' + imgId + '&target&is_page=false&include_unrecognized_faceboxes=false&include_face_crop_src=false&include_recognized_user_profile_picture=false&include_low_confidence_recognitions=false&' + req_parms,
 					gzip: true
@@ -74,7 +74,7 @@ exports.fbSession = function(config){
 					try {
 						json = JSON.parse(body.replace('for (;;);', ''));
 						if ((json.payload == null || json.payload.length == 0) && _ct < 15) THIS.getRecognitionMetadata(imgId, callback, _ct + 1);
-						else THIS.cleanImagePost(imgId, callback, json.payload[0].faceboxes);
+						else THIS.cleanImagePost(imgId, callback, json.payload[0]);
 					} catch (e) {
 						THIS.cleanImagePost(imgId, callback, json.payload);
 					}
@@ -126,31 +126,31 @@ exports.fbSession = function(config){
 		
 						console.log("IMG_ID: " + imgId);
 						THIS.getRecognitionMetadata(imgId, function(result) {
-							if (!result) {
+							if (!result || !result.faceboxes) {
 								_callback({
 									error: {"message": 'Facebook returned no data.',
 									code: -500}
 								});
-							} else if (result.length == 0) {
+							} else if (result.faceboxes.length == 0) {
 								_callback({
 									error: {"message": 'Facebook couldn\'t detect any face.',
 									code: -501}
 								});
-							} else if (result[0].recognitions.length == 0) {
+							} else if (result[0].faceboxes[0].recognitions.length == 0) {
 								_callback({
 									error: {"message": 'Facebook couldn\'t recognize this picture.',
 									code: -502}
 								});
-							} else if (result[0].recognitions[0].certainty < 0.85) {
+							} else if (result[0].faceboxes[0].recognitions[0].certainty < 0.85) {
 								_callback({
 									error: {"message": 'Facebook recognition has a low certainty for this picture.',
 									code: -503}
 								});
 							} else {
 								var mdata = {
-									certainty: result[0].recognitions[0].certainty,
-									name: result[0].recognitions[0].user.name,
-									fbid: result[0].recognitions[0].user.fbid
+									certainty: result[0].faceboxes[0].recognitions[0].certainty,
+									name: result[0].faceboxes[0].recognitions[0].user.name,
+									fbid: result[0].faceboxes[0].recognitions[0].user.fbid
 								};
 								THIS.graph.get(mdata.fbid + "?fields=id,name,gender,hometown,education,birthday,email,interested_in,link,relationship_status,devices",
 									function(err, _res) {
