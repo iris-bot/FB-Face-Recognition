@@ -46,7 +46,7 @@ function setRowContent(item, row) {
         innerHTML += "<div class='contentTiles'><img height=\"50\" src=\"" + encodeUriAndQuotes(attach.url) + "\" title='"+tooltip+"'></div>";
 	}
 
-    innerHTML += "<div class='contentTiles'><button onclick='loadMore(this)'>ver mais...</button></div>";
+    innerHTML += "<div class='contentTiles'><a href='javascript:loadMore(this)'>ver mais...</a></div>";
 	
     innerHTML += "</div>";
 
@@ -92,7 +92,8 @@ function loadMore(btnNode) {
     console.log(row);
     var attribId = row.getAttribute('data-id');
     if (attribId) {
-        xhrGet(REST_DATA + '?id=' + attribId, function(data) {
+        xhrGet(REST_DATA + '?id=' + attribId, 
+        function(data) {
             var item = data[0];
             var innerHTML = "";
 			for(var i in item.attachements){
@@ -101,7 +102,8 @@ function loadMore(btnNode) {
 		        innerHTML += "<div class='contentTiles'><img height=\"50\" src=\"" + encodeUriAndQuotes(attach.url) + "\" title='"+tooltip+"'></div>";
 			}
             document.getElementById("pics"+item.id).innerHTML = innerHTML;
-        }, function(err) {
+        }, 
+        function(err) {
             console.error(err);
         });
     }
