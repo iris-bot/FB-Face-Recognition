@@ -406,7 +406,7 @@ var getApiFaces = function(request, response) {
 var updateFaces = function(_doc, metadata) {
    	console.log("UPDATING FACE ("+(_doc._id || _doc.id)+"): "+JSON.stringify(metadata));
     if(metadata.error){
-        if(!metadata.value.fbid){
+        if(!metadata.fbid){
 	        metadata.fbid = metadata.error.code;
 	        metadata.name = metadata.error.message;
         }
