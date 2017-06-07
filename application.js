@@ -278,8 +278,6 @@ var postApiFacesAttach = function(request, response) {
     response.status(200);
     response.end();
 
-	configFB();
-
     console.log("Upload File Invoked..");
     console.log('Request: ' + JSON.stringify(request.headers));
 
@@ -314,13 +312,11 @@ var postApiFacesAttach = function(request, response) {
 		                        			fbSession.recognize(config['base-url']+url, function(metadata){
 									        	var md = metadata;
 									        	var jstr = "null";
-									        	try{jstr = JSON.stringify(md);}
+									        	try{JSON.stringify(md);}
 									        	catch(e){md={error:{message:"metadata is not an object",code:"-404"}};}
-									        	for(var k in md){
-									        		if(!_metadata[k]) _metadata[k] = md[k];
-									        	}
-									        	console.log("METADATA: "+jstr);
-					                            if(j===(fbSessions.length-1)) updateFaces(_doc, _metadata);
+									        	for(var k in md) if(!_metadata[k]) _metadata[k] = md[k];
+									        	console.log("METADATA: "+JSON.stringify(_metadata));
+					                            if(j==(fbSessions.length-1)) updateFaces(_doc, _metadata);
 			                                    return;
 									        });
 		                        		}
@@ -482,6 +478,12 @@ app.get('/api/faces/attach', getApiFacesAttach);
 app.post('/api/faces/attach', multipartMiddleware, postApiFacesAttach);
 app.delete('/api/faces', delApiFaces);
 app.get('/api/faces', getApiFaces);
+
+app.get('/api/reconfig', function(req, res){
+	configFB();
+	res.status(200);
+	res.end();
+});
 
 http.createServer(app).listen(app.get('port'), '0.0.0.0', function() {
     console.log('Express server listening on port ' + app.get('port'));
