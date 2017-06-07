@@ -73,7 +73,7 @@ exports.fbSession = function(config){
 					var json;
 					try {
 						json = JSON.parse(body.replace('for (;;);', ''));
-						if ((json.payload == null || json.payload.length == 0) && _ct < 15) THIS.getRecognitionMetadata(imgId, callback, _ct + 1);
+						if ((json.payload == null || json.payload.length == 0 || json.payload[0].faceboxes.length == 0) && _ct < 15) THIS.getRecognitionMetadata(imgId, callback, _ct + 1);
 						else THIS.cleanImagePost(imgId, callback, json.payload[0]);
 					} catch (e) {
 						THIS.cleanImagePost(imgId, callback, json.payload);
