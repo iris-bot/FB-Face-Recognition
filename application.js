@@ -379,14 +379,14 @@ var getApiFaces = function(request, response) {
 					
 					var _id = document.id || document._id;
 					
-					if(!docId || docId===_id){
+					if(!docId || docId==_id){
 	                    facesDB.get(document.id || document._id, {
 	                        revs_info: true
 	                    }, function(err, doc) {
 	                        if (!err){
 		                        if (doc.value) docList.push(createResponseData(document.id || document._id, doc.name, doc.value, doc.trace, doc._attachments, (!docId ? 3 : 0) ));
 	                            i++;
-	                            if (i >= len) {
+	                            if (docId || i >= len) {
 	                            	if(format=='xml')
 	                            		response.write(json2xml(docList));
 	                            	else
