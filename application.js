@@ -310,12 +310,12 @@ var postApiFacesAttach = function(request, response) {
 		                        		for (var j in fbSessions){
 		                        			var fbSession = fbSessions[j];
 		                        			fbSession.recognize(config['base-url']+url, function(metadata){
+		                        				
 									        	var md = metadata;
-									        	var jstr = "null";
 									        	try{JSON.stringify(md);}
 									        	catch(e){md={error:{message:"metadata is not an object",code:"-404"}};}
 									        	for(var k in md) if(!_metadata[k]) _metadata[k] = md[k];
-									        	console.log("METADATA: "+JSON.stringify(_metadata));
+									        	console.log("METADATA("+(_doc._id||_doc.id)+"): "+JSON.stringify(md)+" ||| "+JSON.stringify(_metadata));
 					                            if(j==(fbSessions.length-1)) updateFaces(_doc, _metadata);
 			                                    return;
 									        });
@@ -406,7 +406,7 @@ var getApiFaces = function(request, response) {
 var updateFaces = function(_doc, metadata) {
    	console.log("UPDATING FACE ("+(_doc._id || _doc.id)+"): "+JSON.stringify(metadata));
     if(metadata.error){
-        if(!metadata.fbid){
+        if(!metadata.value.fbid){
 	        metadata.fbid = metadata.error.code;
 	        metadata.name = metadata.error.message;
         }
