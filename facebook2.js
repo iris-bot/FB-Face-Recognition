@@ -93,7 +93,7 @@ exports.fbSession = function(config){
 				if(!_url.toLowerCase().startsWith("http")) {
 					console.log("FB_AUTH_URL: bad url, maybe expired cookies!");
 					_callback({
-								error: {"message":'Bad Facebook authentication URL',
+								error: {"message":'Facebook authentication token seems expired',
 								code: -400}
 							});
 					return;
@@ -118,7 +118,7 @@ exports.fbSession = function(config){
 		
 						if (!imgId) {
 							_callback({
-								error: {"message":'Failed sending picture to Facebook.',
+								error: {"message":'Timeout sending picture to Facebook.',
 								code: -499}
 							});
 							return;
@@ -136,7 +136,7 @@ exports.fbSession = function(config){
 									error: {"message": 'Facebook couldn\'t detect any face.',
 									code: -501}
 								});
-							} else if (result[0].recognitions.length === 0) {
+							} else if (result[0].recognitions.length == 0) {
 								_callback({
 									error: {"message": 'Facebook couldn\'t recognize this picture.',
 									code: -502}
