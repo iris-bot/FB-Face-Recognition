@@ -46,7 +46,7 @@ function setRowContent(item, row) {
         innerHTML += "<div class='contentTiles'><img height=\"50\" src=\"" + encodeUriAndQuotes(attach.url) + "\" title='"+tooltip+"'></div>";
 	}
 
-    innerHTML += "<div class='contentTiles'><a href='javascript:loadMore(this)'>ver mais...</a></div>";
+    innerHTML += "<div class='contentTiles'><a href='javascript:loadMore(\""+item.id+"\")'>ver mais...</a></div>";
 	
     innerHTML += "</div>";
 
@@ -86,27 +86,21 @@ function deleteItem(deleteBtnNode) {
     }
 }
 
-function loadMore(btnNode) {
-	console.log(btnNode);
-    var row = btnNode.parentNode.parentNode.parentNode;
-    console.log(row);
-    var attribId = row.getAttribute('data-id');
-    if (attribId) {
-        xhrGet(REST_DATA + '?id=' + attribId, 
-        function(data) {
-            var item = data[0];
-            var innerHTML = "";
-			for(var i in item.attachements){
-				var attach = item.attachements[i];
-				var tooltip = item.trace[i].date + " | " + item.trace[i].latitude + " | " + item.trace[i].longitude;
-		        innerHTML += "<div class='contentTiles'><img height=\"50\" src=\"" + encodeUriAndQuotes(attach.url) + "\" title='"+tooltip+"'></div>";
-			}
-            document.getElementById("pics"+item.id).innerHTML = innerHTML;
-        }, 
-        function(err) {
-            console.error(err);
-        });
-    }
+function loadMore(attribId) {
+    xhrGet(REST_DATA + '?id=' + attribId, 
+    function(data) {
+        var item = data[0];
+        var innerHTML = "";
+		for(var i in item.attachements){
+			var attach = item.attachements[i];
+			var tooltip = item.trace[i].date + " | " + item.trace[i].latitude + " | " + item.trace[i].longitude;
+	        innerHTML += "<div class='contentTiles'><img height=\"50\" src=\"" + encodeUriAndQuotes(attach.url) + "\" title='"+tooltip+"'></div>";
+		}
+        document.getElementById("pics"+item.id).innerHTML = innerHTML;
+    }, 
+    function(err) {
+        console.error(err);
+    });
 }
 
 function showLoadingMessage() {
