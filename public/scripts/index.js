@@ -60,7 +60,7 @@ function dumpObj(item){
 		for(var k in item){
 			str+="<div style='display:inline-block'>"+k+": "+dumpObj(item[k])+"</div>";
 		}
-	}else if(item && item.trim()!=""){
+	}else if(item){
 		str+=item;
 	}
 	return str;
