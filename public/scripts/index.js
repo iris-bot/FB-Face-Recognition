@@ -33,9 +33,9 @@ function setRowContent(item, row) {
     	if(item.value.fbid){
     		innerHTML += "<div>" + (item.value.fbid>0 ? "<a href='http://facebook.com/"+item.value.fbid+"' target='_blank'>"+item.name+"</a>" : item.name) + "</div>";
     	}
-		for(var k in item.value){
-			innerHTML += "<div>"+k+": "+dumpObj(item.value[k])+"</div>";
-		}
+		
+		innerHTML += "<div>"+dumpObj(item.value)+"</div>";
+		
     }
 	
 	innerHTML += "</td><td class='contentDetails'><div id='pics"+item.id+"' class='flexBox'>";
@@ -58,10 +58,10 @@ function dumpObj(item){
 	var str = "";
 	if(isObject(item)){
 		for(var k in item){
-			str+="&nbsp;&nbsp;&nbsp;"+k+": "+dumpObj(item[k]);
+			str+="<div style='display:inline-block'>"+k+": "+dumpObj(item[k])+"</div>";
 		}
 	}else if(item.trim()!=""){
-		str+=item+"<br>";
+		str+=item;
 	}
 	return str;
 }
