@@ -34,7 +34,7 @@ function setRowContent(item, row) {
     		innerHTML += "<div>" + (item.value.fbid>0 ? "<a href='http://facebook.com/"+item.value.fbid+"' target='_blank'>"+item.name+"</a>" : item.name) + "</div>";
     	}
 		for(var k in item.value){
-			innerHTML += "<div>"+k+": "+item.value[k]+"</div>";
+			innerHTML += "<div>"+k+": "+dumpObj(item.value[k])+"</div>";
 		}
     }
 	
@@ -52,6 +52,18 @@ function setRowContent(item, row) {
 
     row.innerHTML = innerHTML + "</td><td class = 'contentAction'><span class='deleteBtn' onclick='deleteItem(this)' title='delete me'></span></td>";
 
+}
+
+function dumpObj(item){
+	var str = "";
+	if(isObject(item)){
+		for(var k in item.value){
+			str+=k+": "+dumpObj(item[k])+"<br>";
+		}
+	}else{
+		str+=item;
+	}
+	return str;
 }
 
 function addItem(item) {
@@ -101,6 +113,11 @@ function loadMore(attribId) {
     function(err) {
         console.error(err);
     });
+}
+
+function isObject(val) {
+    if (val === null) { return false;}
+    return ( (typeof val === 'function') || (typeof val === 'object') );
 }
 
 function showLoadingMessage() {
