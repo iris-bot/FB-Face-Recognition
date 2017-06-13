@@ -58,10 +58,10 @@ function dumpObj(item){
 	var str = "";
 	if(isObject(item)){
 		for(var k in item){
-			str+=k+": "+dumpObj(item[k])+"<br>";
+			str+="&nbsp;&nbsp;&nbsp;"+k+": "+dumpObj(item[k]);
 		}
-	}else{
-		str+=item;
+	}else if(item.trim()!=""){
+		str+=item+"<br>";
 	}
 	return str;
 }
