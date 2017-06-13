@@ -57,7 +57,7 @@ function setRowContent(item, row) {
 function dumpObj(item){
 	var str = "";
 	if(isObject(item)){
-		for(var k in item.value){
+		for(var k in item){
 			str+=k+": "+dumpObj(item[k])+"<br>";
 		}
 	}else{
