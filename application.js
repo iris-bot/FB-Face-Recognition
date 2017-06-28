@@ -369,34 +369,41 @@ var getApiFaces = function(request, response) {
 
     var docList = [];
     var i = 0;
-    facesDB.find({selector:{value:{"$exists":true}}}, function(err, body) {
+    facesDB.list(function(err, body) {
         if (!err) {
-            var len = body.docs.length;
+            var len = body.rows.length;
             console.log('total # of rows -> ' + len);
-                body.docs.forEach(function(document) {
+                body.rows.forEach(function(document) {
 					
-					var _id = document.id || document._id;
-					
-					if(!docId || docId==_id){
-	                    facesDB.get(document.id || document._id, {
-	                        revs_info: true
-	                    }, function(err, doc) {
-	                        if (!err){
-		                        if (doc.value) docList.push(createResponseData(document.id || document._id, doc.name, doc.value, doc.trace, doc._attachments, (!docId ? 3 : 0) ));
-	                            i++;
-	                            if (docId || i >= len) {
-	                            	if(format=='xml')
-	                            		response.write(json2xml(docList));
-	                            	else
-	                                	response.write(JSON.stringify(docList));
-	                                console.log('ending response...');
-	                                response.end();
-	                            }
-	                        } else {
-	                            console.error(err);
-	                        }
-	                    });
+					if(document.value){
+						
+						var _id = document.id || document._id;
+						
+						if(!docId || docId==_id){
+		                    facesDB.get(document.id || document._id, {
+		                        revs_info: true
+		                    }, function(err, doc) {
+		                        if (!err){
+			                        if (doc.value) docList.push(createResponseData(document.id || document._id, doc.name, doc.value, doc.trace, doc._attachments, (!docId ? 3 : 0) ));
+		                            i++;
+		                            if (docId || i >= len) {
+		                            	if(format=='xml')
+		                            		response.write(json2xml(docList));
+		                            	else
+		                                	response.write(JSON.stringify(docList));
+		                                console.log('ending response...');
+		                                response.end();
+		                            }
+		                        } else {
+		                            console.error(err);
+		                        }
+		                    });
+						}
+						
+						
 					}
+					
+					
 					
                 });
         } else {
