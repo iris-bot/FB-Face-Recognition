@@ -46,7 +46,7 @@ function setRowContent(item, row) {
         innerHTML += "<div class='contentTiles'><img height=\"50\" src=\"" + encodeUriAndQuotes(attach.url) + "\" title='"+tooltip+"'></div>";
 	}
 
-    innerHTML += "<div class='contentTiles'><a href='javascript:loadMore(\""+item.id+"\")'>ver mais...</a></div>";
+    innerHTML += "<div class='contentTiles'><a href='javascript:loadMore(\""+item.id+"\")'>ver mais ("+item.pics+")...</a></div>";
 	
     innerHTML += "</div>";
 
