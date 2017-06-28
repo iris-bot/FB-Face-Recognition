@@ -371,9 +371,9 @@ var getApiFaces = function(request, response) {
     var i = 0;
     facesDB.find({selector:{value:{"$exists":true}}}, function(err, body) {
         if (!err) {
-            var len = body.rows.length;
+            var len = body.docs.length;
             console.log('total # of rows -> ' + len);
-                body.rows.forEach(function(document) {
+                body.docs.forEach(function(document) {
 					
 					var _id = document.id || document._id;
 					
