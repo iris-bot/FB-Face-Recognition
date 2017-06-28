@@ -201,7 +201,7 @@ function createResponseData(id, name, value, trace, attachments, limit) {
         id: id,
         name: sanitizeInput(name),
         value: value, 
-        trace: trace,
+        trace: [],
         attachements: [],
         pics: attachments.length
     };
@@ -210,6 +210,7 @@ function createResponseData(id, name, value, trace, attachments, limit) {
 	for(var k in attachments){
 		_ct++;
 		var item = attachments[k];
+		responseData.trace.push(trace[_ct]);
 		responseData.attachements.push({
 			content_type: item.content_type,
             key: k,
@@ -368,7 +369,7 @@ var getApiFaces = function(request, response) {
 
     var docList = [];
     var i = 0;
-    facesDB.list(function(err, body) {
+    facesDB.find({selector:{value:{"$exists":true}}}, function(err, body) {
         if (!err) {
             var len = body.rows.length;
             console.log('total # of rows -> ' + len);
