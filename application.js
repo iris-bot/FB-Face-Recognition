@@ -368,44 +368,23 @@ var getApiFaces = function(request, response) {
 	var docId = request.query.id;
 
     var docList = [];
-    var i = 0;
-    facesDB.list(function(err, body) {
+    
+    var sel = {selector:{"value":{"$exists": true}}};
+    if(docId) sel = {selector:{"_id":docId}};
+    
+    facesDB.find(sel, function(err, body) {
         if (!err) {
-            var len = body.rows.length;
+            var len = body.docs.length;
             console.log('total # of rows -> ' + len);
-                body.rows.forEach(function(document) {
-					
-					if(document.value){
-						
-						var _id = document.id || document._id;
-						
-						if(!docId || docId==_id){
-		                    facesDB.get(document.id || document._id, {
-		                        revs_info: true
-		                    }, function(err, doc) {
-		                        if (!err){
-			                        if (doc.value) docList.push(createResponseData(document.id || document._id, doc.name, doc.value, doc.trace, doc._attachments, (!docId ? 3 : 0) ));
-		                            i++;
-		                            if (docId || i >= len) {
-		                            	if(format=='xml')
-		                            		response.write(json2xml(docList));
-		                            	else
-		                                	response.write(JSON.stringify(docList));
-		                                console.log('ending response...');
-		                                response.end();
-		                            }
-		                        } else {
-		                            console.error(err);
-		                        }
-		                    });
-						}
-						
-						
-					}
-					
-					
-					
-                });
+        	for(var idx in body.docs){
+        		var dc = body.docs[idx];
+                docList.push(createResponseData(dc.id || dc._id, dc.name, dc.value, dc.trace, dc._attachments, (!docId ? 3 : 0) ));
+            }
+           	if(format=='xml')
+        		response.write(json2xml(docList));
+        	else
+            	response.write(JSON.stringify(docList));
+            response.end();
         } else {
             console.err(err);
         }
